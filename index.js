@@ -322,6 +322,8 @@ var path = require('path')
 var isWav = require('is-wav');
 const wavefile = require('wavefile');
 const electron = require('electron');
+const FileType = require('file-type');
+const child_process=require('child_process')
 var totalSplineTime=0;
 var splineFunctionTotal=0;
 function getFileExtension(filename){
@@ -407,6 +409,9 @@ document.getElementById('business').onchange = function(e){
   var files = e.target.files; // FileList object
   const desktopPath = (electron.app || electron.remote.app).getPath('desktop');
   var fullPathDirectory=path.join(desktopPath,'mastered_files')
+  var tempAudioDir=path.join(desktopPath,'temp_audio')
+  var tempAudioExists=false
+  var filesInTempAudioList=[]
   var errorPathDirectory=path.join(desktopPath,'error_files')
   var inputFileDirectory=path.join(desktopPath,'mastered_files')
   var outputFileDirectory=path.join(desktopPath,'mastered_fixed')
@@ -416,6 +421,7 @@ document.getElementById('business').onchange = function(e){
   var nextBinaryPath = path.join(nextFullPathDirectory,'prep')
   const prevCommand = nextResourceBinary.replace(/(\s+)/g, '\\$1')
   const baseBinaryCommand = baseBinaryPath.replace(/(\s+)/g, '\\$1')
+
   var ng=false
   
   const mainFunction=function(files,i){
@@ -423,72 +429,179 @@ document.getElementById('business').onchange = function(e){
       if(files[i].path!==undefined){
         var filePath = files[i].path
         var buffer = fs.readFileSync(filePath)
+        //to do if file is AIFF. run ffmpeg -i "files[i].path" "temp.wav"
         var fileName=path.basename(filePath)
         var wavPath=path.join(fullPathDirectory,fileName)
         var percentage=Math.floor((i/(files.length-1))*10000)/100+'%'
-        if(fs.existsSync(wavPath)==true){
-          // console.log('file exists run')     
+        function upPercentage(percentage){
+          //console.log(path.basename(files[i].path)+' is not wav')
+          //console.log('not wav run')
           document.getElementById('text').innerHTML= percentage
           document.getElementById('bar').style.width = percentage;
           setTimeout(function(){
             mainFunction(files,i+1)
-          }) 
+          })
+        }
+        if(fs.existsSync(wavPath)==true){
+          // console.log('file exists run')     
+          // document.getElementById('text').innerHTML= percentage
+          // document.getElementById('bar').style.width = percentage;
+          // setTimeout(function(){
+          //   mainFunction(files,i+1)
+          // }) 
+          upPercentage(percentage);
         }
         else{
-          try{
+          // try{
             if(isWav(buffer)==true){
-
                 // console.log('normal run')
-                warmWav(files[i].path,wavPath)
-                document.getElementById('text').innerHTML= percentage
-                document.getElementById('bar').style.width = percentage;
-                setTimeout(function(){
-                  mainFunction(files,i+1)
-                }) 
+                try{
+                  warmWav(files[i].path,wavPath)
+                  upPercentage(percentage);
+                }
+                catch(e){
+                  console.log(fileName+' isWav Error')
+                  upPercentage(percentage)
+                }
+                // document.getElementById('text').innerHTML= percentage
+                // document.getElementById('bar').style.width = percentage;
+                // setTimeout(function(){
+                //   mainFunction(files,i+1)
+                // }) 
+                
             }
             else{
-              console.log(path.basename(files[i].path)+' is not wav')
-              //console.log('not wav run')
-              document.getElementById('text').innerHTML= percentage
-              document.getElementById('bar').style.width = percentage;
-              setTimeout(function(){
-                mainFunction(files,i+1)
-              }) 
-            } 
-          }
-          catch(e){
-            // console.log('skipped '+path.basename(files[i].path)+' due to error conditions')
-            console.log('ng run')
-            skippedFiles.push({'path':files[i].path,'error':e})
-            global.skippedFiles=skippedFiles
-            if(ng==false){
-              if (!fs.existsSync(errorPathDirectory)){
-                fs.mkdirSync(errorPathDirectory);
+              //to do if file is AIFF. run ffmpeg -i "files[i].path" "temp.wav"
+              function checkFileIsAudio(buffer,callback){
+                FileType.fromBuffer(buffer).then(function(res){
+                  if(res==undefined){
+                    // console.log(fileName+' mime : '+res)
+                  }
+                  else{
+                    fileMime=res.mime.match('audio')!==null
+                    callback(fileMime)
+                  }
+                    upPercentage(percentage)
+                }) 
               }
-            }
-            ng=true
-            move(files[i].path,path.join(errorPathDirectory,fileName),function(){
-              document.getElementById('text').innerHTML= percentage
-              document.getElementById('bar').style.width = percentage;
-              setTimeout(function(){
-                mainFunction(files,i+1)
-              }) 
-            })          
-          }
+              // function FFMPEGIT(inPath,outPath,errorPathDirectory,callback){
+              function FFMPEGIT(inPath,outPath,errorPathDirectory){  
+                var outPathDir = path.dirname(outPath)
+                var fileName=path.basename(inPath)
+                // var tempFilePath = path.join(outPathDir,'temp.wav')
+                var newFileName=path.parse(fileName).name+'.wav'
+                var newOutWavPath=path.join(outPathDir,newFileName)
+                if (!fs.existsSync(outPathDir)){
+                  fs.mkdirSync(outPathDir,{recursive:true});
+                }
+                // var command = "ffmpeg -i "+"\""+ inPath +"\""+" "+"\""+ tempFilePath +"\"";
+                var command = "ffmpeg -i "+"\""+ inPath +"\""+" "+"\""+ newOutWavPath +"\"";
+                child_process.exec(command,function(err,stdout,stderr){
+                  if(err!==null){  
+                    console.log('ffmpeg ng run : ' +fileName)
+                    // console.log(err)
+                    // skippedFiles.push({'path':inPath,'error':err})
+                    // global.skippedFiles=skippedFiles
+                    if(ng==false){
+                      if (!fs.existsSync(errorPathDirectory)){
+                        fs.mkdirSync(errorPathDirectory,{recursive:true});
+                      }
+                    }
+                    ng=true
+                    move(inPath,path.join(errorPathDirectory,fileName),function(){
+                      // document.getElementById('text').innerHTML= percentage
+                      // document.getElementById('bar').style.width = percentage;
+                      // setTimeout(function(){
+                      //   mainFunction(files,i+1)
+                      // }) 
+                      //callback()
+                      upPercentage(percentage);
+                    })  
+                  }
+                  else{
+                    // mainFunction(files,i+1)
+                    
+                    console.log('ffmpeg->warmWav : '+newFileName)
+                    try{
+                      // warmWav(tempFilePath,newOutWavPath)
+                      warmWav(newOutWavPath,newOutWavPath)
+                      upPercentage(percentage);
+                    }
+                    catch(e){
+                      console.log(fileName+' ffmpeg->warmWav Error')
+                      upPercentage(percentage)
+                    }
+                    // document.getElementById('text').innerHTML= percentage
+                    // document.getElementById('bar').style.width = percentage;
+                    // setTimeout(function(){
+                    //   mainFunction(files,i+1)
+                    // }) 
+                    //callback()
+                    upPercentage(percentage);
+                  }
+                })
+                
+              }
+              
+              function thisOrThat(cond1){
+                if(cond1==true){
+                  // FFMPEGIT(files[i].path,wavPath,errorPathDirectory)
+                  if(tempAudioExists==false){
+                    if(fs.existsSync(tempAudioDir)==false){
+                      fs.mkdirSync(tempAudioDir,{recursive:true})
+                    }
+                  }
+                  tempAudioExists=true
+                  var tempAudioPath=path.join(tempAudioDir,fileName)
+                  move(files[i].path,tempAudioPath,console.log)
+                  filesInTempAudioList.push(tempAudioPath)
+                }
+                else{
+                  console.log(path.basename(files[i].path)+' is not audio')
+                  upPercentage(percentage)
+                }
+              }
+              checkFileIsAudio(buffer,thisOrThat)
+              
+               
+            } 
+          // }
+          // catch(e){
+          //   // console.log('skipped '+path.basename(files[i].path)+' due to error conditions')
+          //   console.log('ng run')
+          //   skippedFiles.push({'path':files[i].path,'error':e})
+          //   global.skippedFiles=skippedFiles
+          //   if(ng==false){
+          //     if (!fs.existsSync(errorPathDirectory)){
+          //       fs.mkdirSync(errorPathDirectory);
+          //     }
+          //   }
+          //   ng=true
+          //   move(files[i].path,path.join(errorPathDirectory,fileName),function(){
+          //     // document.getElementById('text').innerHTML= percentage
+          //     // document.getElementById('bar').style.width = percentage;
+          //     // setTimeout(function(){
+          //     //   mainFunction(files,i+1)
+          //     // }) 
+          //     upPercentage(percentage);
+          //   })          
+          // }
           
         }
       }
       else{
         console.log('file path undefined run')
-        document.getElementById('text').innerHTML= percentage
-        document.getElementById('bar').style.width = percentage;
-        setTimeout(function(){
-          mainFunction(files,i+1)
-        }) 
+        // document.getElementById('text').innerHTML= percentage
+        // document.getElementById('bar').style.width = percentage;
+        // setTimeout(function(){
+        //   mainFunction(files,i+1)
+        // }) 
+        upPercentage(percentage);
       }
     }
     else{
       console.log('finish run')
+      console.log(filesInTempAudioList)
       document.getElementById('text').innerHTML='Ready'
       document.getElementById('bar').style.width ='100%'
     }

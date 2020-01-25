@@ -8,8 +8,8 @@
     "build": "sudo bash run_packager.sh",
     "buildpython": "pyinstaller --onefile spline.py",
     "pythonbuild": "pyinstaller --onefile spline.py",
-    "electronbuild":"sudo bash run_packager.sh",
-    "buildelectron":"sudo bash run_packager.sh"
+    "electronbuild": "sudo bash run_packager.sh",
+    "buildelectron": "sudo bash run_packager.sh"
   },
   "author": "",
   "license": "ISC",
@@ -27,6 +27,7 @@
     "electron-spawn": "^5.0.0",
     "ffmpeg": "0.0.4",
     "fft-js": "0.0.12",
+    "file-type": "^13.1.2",
     "is-wav": "^1.1.2",
     "lodash": "^4.17.15",
     "matplotlib": "^1.0.0",

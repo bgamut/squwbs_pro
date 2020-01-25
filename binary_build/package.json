@@ -5,7 +5,9 @@
   "main": "outputTest.js",
   "scripts": {
     "compile": "node-gyp rebuild",
-    "start": "node main.js"
+    "start": "node main.js",
+    "buildpython": "pyinstaller --onefile convert.py",
+    "pythonbuild": "pyinstaller --onefile convert.py"
   },
   "keywords": [],
   "author": "",
