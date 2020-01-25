@@ -5,9 +5,11 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-packager . squwbs --overwrite --icon=/Users/bernardahn/Documents/GitHub/squwbs_pro/squwbs.icns",
+    "build": "sudo bash run_packager.sh",
     "buildpython": "pyinstaller --onefile spline.py",
-    "pythonbuild": "pyinstaller --onefile spline.py"
+    "pythonbuild": "pyinstaller --onefile spline.py",
+    "electronbuild":"sudo bash run_packager.sh",
+    "buildelectron":"sudo bash run_packager.sh"
   },
   "author": "",
   "license": "ISC",
