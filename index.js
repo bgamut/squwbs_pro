@@ -324,12 +324,20 @@ const wavefile = require('wavefile');
 const electron = require('electron');
 const FileType = require('file-type');
 const child_process=require('child_process')
+const commonPath=require('common-path')
 var totalSplineTime=0;
 var splineFunctionTotal=0;
 function getFileExtension(filename){
   var ext = /^.+\.([^.]+)$/.exec(filename);
   return ext == null ? "" : ext[1];
 }
+const readdirSync = (p, a = []) => {
+  if (fs.statSync(p).isDirectory())
+    fs.readdirSync(p).map(f => readdirSync(a[a.push(path.join(p, f)) - 1], a))
+  return a
+}
+
+
 function warmWav(wavPath, newFilePath){
     const binding = require('./binary_build/build/Release/addon');
     var fs = require('fs');
@@ -409,29 +417,43 @@ document.getElementById('business').onchange = function(e){
   var files = e.target.files; // FileList object
   const desktopPath = (electron.app || electron.remote.app).getPath('desktop');
   var fullPathDirectory=path.join(desktopPath,'mastered_files')
-  var tempAudioDir=path.join(desktopPath,'temp_audio')
-  var tempAudioExists=false
+  // var tempAudioDir=path.join(desktopPath,'temp_audio')
+  var tempAudioDir=path.join(fullPathDirectory,'temp_audio')
+  var tempAudioDirExists=false
+  var wavDirectory=path.join(fullPathDirectory,'wav')
   var filesInTempAudioList=[]
-  var errorPathDirectory=path.join(desktopPath,'error_files')
-  var inputFileDirectory=path.join(desktopPath,'mastered_files')
-  var outputFileDirectory=path.join(desktopPath,'mastered_fixed')
-  var nextFullPathDirectory=path.join(desktopPath,'mastered_fixed')
+  // var errorPathDirectory=path.join(desktopPath,'error_files')
+  var errorPathDirectory=path.join(fullPathDirectory,'error_files')
+  // var inputFileDirectory=path.join(desktopPath,'mastered_files')
+  var inputFileDirectory=path.join(fullPathDirectory,'mastered_files')
+  // var outputFileDirectory=path.join(desktopPath,'mastered_fixed')
+  var outputFileDirectory=path.join(fullPathDirectory,'mastered_fixed')
+  // var nextFullPathDirectory=path.join(desktopPath,'mastered_fixed')
+  var nextFullPathDirectory=path.join(fullPathDirectory,'mastered_fixed')
   var baseBinaryPath = path.join(__dirname,'dist/spline')
   var nextResourceBinary=path.join(__dirname,'dist/prep')
   var nextBinaryPath = path.join(nextFullPathDirectory,'prep')
   const prevCommand = nextResourceBinary.replace(/(\s+)/g, '\\$1')
   const baseBinaryCommand = baseBinaryPath.replace(/(\s+)/g, '\\$1')
-
+  var wavDirectoryExists=false
   var ng=false
   
+
   const mainFunction=function(files,i){
     if(files.length-1!==i){
-      if(files[i].path!==undefined){
+      if(files[i]!==undefined){
         var filePath = files[i].path
-        var buffer = fs.readFileSync(filePath)
+        //var buffer = fs.readFileSync(filePath)
         //to do if file is AIFF. run ffmpeg -i "files[i].path" "temp.wav"
         var fileName=path.basename(filePath)
-        var wavPath=path.join(fullPathDirectory,fileName)
+        // var wavPath=path.join(fullPathDirectory,fileName)
+        var wavPath=path.join(wavDirectory,fileName)
+        if(wavDirectoryExists==false){
+          if(fs.existsSync(wavDirectory)==false){
+            fs.mkdirSync(wavDirectory) 
+          }
+          wavDirectoryExists=true
+        }
         var percentage=Math.floor((i/(files.length-1))*10000)/100+'%'
         function upPercentage(percentage){
           //console.log(path.basename(files[i].path)+' is not wav')
@@ -442,173 +464,337 @@ document.getElementById('business').onchange = function(e){
             mainFunction(files,i+1)
           })
         }
+        // function checkFileIsAudio(buffer,callback){
+        //   FileType.fromBuffer(buffer).then(function(res){
+        //     if(res==undefined){
+        //       // console.log(fileName+' mime : '+res)
+        //     }
+        //     else{
+        //       fileMime=res.mime.match('audio')!==null
+        //       callback(fileMime)
+        //     }
+        //       upPercentage(percentage)
+        //   }) 
+        // }
         if(fs.existsSync(wavPath)==true){
-          // console.log('file exists run')     
-          // document.getElementById('text').innerHTML= percentage
-          // document.getElementById('bar').style.width = percentage;
-          // setTimeout(function(){
-          //   mainFunction(files,i+1)
-          // }) 
-          upPercentage(percentage);
+          console.log('file exists run')     
+          document.getElementById('text').innerHTML= percentage
+          document.getElementById('bar').style.width = percentage;
+          setTimeout(function(){
+            mainFunction(files,i+1)
+          })
         }
         else{
-          // try{
-            if(isWav(buffer)==true){
-                // console.log('normal run')
-                try{
-                  warmWav(files[i].path,wavPath)
-                  upPercentage(percentage);
-                }
-                catch(e){
-                  console.log(fileName+' isWav Error')
-                  upPercentage(percentage)
-                }
-                // document.getElementById('text').innerHTML= percentage
-                // document.getElementById('bar').style.width = percentage;
-                // setTimeout(function(){
-                //   mainFunction(files,i+1)
-                // }) 
-                
-            }
-            else{
-              //to do if file is AIFF. run ffmpeg -i "files[i].path" "temp.wav"
-              function checkFileIsAudio(buffer,callback){
-                FileType.fromBuffer(buffer).then(function(res){
-                  if(res==undefined){
-                    // console.log(fileName+' mime : '+res)
-                  }
-                  else{
-                    fileMime=res.mime.match('audio')!==null
-                    callback(fileMime)
-                  }
-                    upPercentage(percentage)
-                }) 
-              }
-              // function FFMPEGIT(inPath,outPath,errorPathDirectory,callback){
-              function FFMPEGIT(inPath,outPath,errorPathDirectory){  
-                var outPathDir = path.dirname(outPath)
-                var fileName=path.basename(inPath)
-                // var tempFilePath = path.join(outPathDir,'temp.wav')
-                var newFileName=path.parse(fileName).name+'.wav'
-                var newOutWavPath=path.join(outPathDir,newFileName)
-                if (!fs.existsSync(outPathDir)){
-                  fs.mkdirSync(outPathDir,{recursive:true});
-                }
-                // var command = "ffmpeg -i "+"\""+ inPath +"\""+" "+"\""+ tempFilePath +"\"";
-                var command = "ffmpeg -i "+"\""+ inPath +"\""+" "+"\""+ newOutWavPath +"\"";
-                child_process.exec(command,function(err,stdout,stderr){
-                  if(err!==null){  
-                    console.log('ffmpeg ng run : ' +fileName)
-                    // console.log(err)
-                    // skippedFiles.push({'path':inPath,'error':err})
-                    // global.skippedFiles=skippedFiles
-                    if(ng==false){
-                      if (!fs.existsSync(errorPathDirectory)){
-                        fs.mkdirSync(errorPathDirectory,{recursive:true});
-                      }
-                    }
-                    ng=true
-                    move(inPath,path.join(errorPathDirectory,fileName),function(){
-                      // document.getElementById('text').innerHTML= percentage
-                      // document.getElementById('bar').style.width = percentage;
-                      // setTimeout(function(){
-                      //   mainFunction(files,i+1)
-                      // }) 
-                      //callback()
-                      upPercentage(percentage);
-                    })  
-                  }
-                  else{
-                    // mainFunction(files,i+1)
-                    
-                    console.log('ffmpeg->warmWav : '+newFileName)
-                    try{
-                      // warmWav(tempFilePath,newOutWavPath)
-                      warmWav(newOutWavPath,newOutWavPath)
-                      upPercentage(percentage);
-                    }
-                    catch(e){
-                      console.log(fileName+' ffmpeg->warmWav Error')
-                      upPercentage(percentage)
-                    }
-                    // document.getElementById('text').innerHTML= percentage
-                    // document.getElementById('bar').style.width = percentage;
-                    // setTimeout(function(){
-                    //   mainFunction(files,i+1)
-                    // }) 
-                    //callback()
-                    upPercentage(percentage);
-                  }
-                })
-                
-              }
-              
-              function thisOrThat(cond1){
-                if(cond1==true){
-                  // FFMPEGIT(files[i].path,wavPath,errorPathDirectory)
-                  if(tempAudioExists==false){
-                    if(fs.existsSync(tempAudioDir)==false){
-                      fs.mkdirSync(tempAudioDir,{recursive:true})
-                    }
-                  }
-                  tempAudioExists=true
-                  var tempAudioPath=path.join(tempAudioDir,fileName)
-                  move(files[i].path,tempAudioPath,console.log)
-                  filesInTempAudioList.push(tempAudioPath)
-                }
-                else{
-                  console.log(path.basename(files[i].path)+' is not audio')
-                  upPercentage(percentage)
-                }
-              }
-              checkFileIsAudio(buffer,thisOrThat)
-              
-               
-            } 
-          // }
-          // catch(e){
-          //   // console.log('skipped '+path.basename(files[i].path)+' due to error conditions')
-          //   console.log('ng run')
-          //   skippedFiles.push({'path':files[i].path,'error':e})
-          //   global.skippedFiles=skippedFiles
-          //   if(ng==false){
-          //     if (!fs.existsSync(errorPathDirectory)){
-          //       fs.mkdirSync(errorPathDirectory);
-          //     }
-          //   }
-          //   ng=true
-          //   move(files[i].path,path.join(errorPathDirectory,fileName),function(){
-          //     // document.getElementById('text').innerHTML= percentage
-          //     // document.getElementById('bar').style.width = percentage;
-          //     // setTimeout(function(){
-          //     //   mainFunction(files,i+1)
-          //     // }) 
-          //     upPercentage(percentage);
-          //   })          
-          // }
-          
+          try{
+            warmWav(files[i].path,wavPath)
+            fs.unlinkSync(files[i].path)
+            document.getElementById('text').innerHTML= percentage
+            document.getElementById('bar').style.width = percentage;
+            setTimeout(function(){
+              mainFunction(files,i+1)
+            })
+          }
+          catch(e){
+            var errorFilePath=path.join(errorPathDirectory,fileName)
+            move(files[i].path,errorFilePath,function(){
+              console.log(fileName+' warmwav Error : '+e)
+            })
+            document.getElementById('text').innerHTML= percentage
+            document.getElementById('bar').style.width = percentage;
+            setTimeout(function(){
+              mainFunction(files,i+1)
+            })
+          }               
         }
       }
       else{
         console.log('file path undefined run')
-        // document.getElementById('text').innerHTML= percentage
-        // document.getElementById('bar').style.width = percentage;
-        // setTimeout(function(){
-        //   mainFunction(files,i+1)
-        // }) 
-        upPercentage(percentage);
+        document.getElementById('text').innerHTML= percentage
+        document.getElementById('bar').style.width = percentage;
+        setTimeout(function(){
+          mainFunction(files,i+1)
+        })
       }
     }
     else{
       console.log('finish run')
-      console.log(filesInTempAudioList)
-      // todo : python convert.py inputDir="/Users/bernardahn/Splice" outputDir="/Users/bernardahn/Desktop/temp_audio" errorDir="/Users/bernardahn/Desktop/error_files""
-      document.getElementById('text').innerHTML='Ready'
-      document.getElementById('bar').style.width ='100%'
+      var newFileList=readdirSync(wavDirectory)
+      function postWork(fileList,i,desiredExt){
+        var fileName=path.basename(fileList[i])
+        var fileNameOnly=fileName.split('.')[0]
+        var newFileName=fileNameOnly+'.'+desiredExt
+        var percentage=Math.floor((i/(fileList.length-1))*10000)/100+'%'
+        document.getElementById('text').innerHTML= percentage
+        document.getElementById('bar').style.width = percentage;
+        if(fs.lstatSync(fileList[i]).isDirectory()==false){
+          if(path.extname(fileList[i])=='.'+desiredExt){
+            move(fileList[i],path.join(fullPathDirectory,fileName),function(){
+              if(i+1<fileList.length){
+                setTimeout(function(){
+                  postWork(fileList,i+1,desiredExt)
+                })
+              }
+              else{
+                console.log('callback should fit here')
+                fs.readdir(wavDirectory,function(err,files){
+                  files.forEach(function(file){
+                    fs.unlinkSync(file)
+                  })
+                })
+                document.getElementById('text').innerHTML='Ready'
+                document.getElementById('bar').style.width ='100%'
+              }
+            })  
+          }
+          else{
+            var newOutputFilePath=path.join(fullPathDirectory,newFileName)
+            var baseCommand=path.join(process.cwd(),'binary_build/dist/convert')
+            var command=baseCommand+' inputFilePath="'+fileList[i]+'" outputFilePath="'+newOutputFilePath+'" errorDir="'+errorPathDirectory+'"'
+            // console.log(command)
+            child_process.exec(command,function(err,stdout,stderr){
+              if(err!==null){  
+                console.log(err)
+              }
+              else{
+                // console.log(stdout)
+              }
+              if(i+1<fileList.length){
+
+                setTimeout(function(){
+                  fs.unlinkSync(fileList[i])
+                  postWork(fileList,i+1,desiredExt)
+                })
+                
+              }
+              else{
+                console.log('callback should fit here')
+                
+                fs.readdir(wavDirectory,function(err,files){
+                  files.forEach(function(file){
+                    // fs.unlinkSync(file)
+                    var errorFilePath=path.join(errorPathDirectory,fileName)
+                    move(file,errorFilePath,function(){
+                      console.log(file+ 'moved to error files')
+                    })
+                  })
+                })
+                document.getElementById('text').innerHTML='Ready'
+                document.getElementById('bar').style.width ='100%'
+              }
+            })  
+          }
+        }
+        else{
+          postWork(fileList,i+1,desiredExt)
+        }
+      }
+      postWork(newFileList,0,'mp3')
+      //console.log(filesInTempAudioList)
     }
+  }
+  const preMastering=function(inputDir,tempAudioDir,errorPathDirectory){
+    // document.getElementById('text').innerHTML= 'preprocessing in progress'
+    // document.getElementById('bar').style.color = 'green';
+    var baseCommand=path.join(process.cwd(),'binary_build/dist/convert')
+      // todo : python convert.py inputDir="/Users/bernardahn/Splice" outputDir="/Users/bernardahn/Desktop/temp_audio" errorDir="/Users/bernardahn/Desktop/error_files""
+      // var newFileList=[]
+      var newFileList=readdirSync(inputDir)
+      console.log(newFileList)
+      // fs.readdir(inputDir,function(err,files){
+      //   files.forEach(function(file){
+      //     newFileList.push({'path':path.join(inputDir,file)})
+      //   })
+        // console.log(newFileList)
+        //var command=baseCommand+' inputDir="'+inputDir+'" outputDir="'+tempAudioDir+'" errorDir="'+errorPathDirectory+'"'
+        // for (var i=0; i<newFileList.length;i++){
+        function preWork(fileList,i,desiredExt){
+          var fileName=path.basename(fileList[i])
+          var fileNameOnly=fileName.split('.')[0]
+          var newFileName=fileNameOnly+'.'+desiredExt
+          // console.log(newFileName)
+          var percentage=Math.floor((i/(fileList.length-1))*10000)/100+'%'
+          document.getElementById('text').innerHTML= percentage
+          document.getElementById('bar').style.width = percentage;
+          
+            if(fs.lstatSync(fileList[i]).isDirectory()==false){
+              if(fs.existsSync(path.join(tempAudioDir,fileName))==true){
+                if(i+1<fileList.length){
+                  setTimeout(function(){
+                    preWork(fileList,i+1,desiredExt)
+                  })
+                }
+                else{
+                  console.log('callback should fit here')
+                  var newFileList=[]
+                  fs.readdir(tempAudioDir,function(err,files){
+                    files.forEach(function(file){
+                      newFileList.push({'path':path.join(tempAudioDir,file)})
+                    })
+                  })
+                  mainFunction(newFileList,0) 
+                }
+              }
+              else{
+                if(path.extname(fileList[i])=='.'+desiredExt){
+                  move(fileList[i],path.join(tempAudioDir,fileName),function(){
+                    if(i+1<fileList.length){
+                      setTimeout(function(){
+                        preWork(fileList,i+1,desiredExt)
+                      })
+                    }
+                    else{
+                      console.log('callback should fit here')
+                      var newFileList=[]
+                      fs.readdir(tempAudioDir,function(err,files){
+                        files.forEach(function(file){
+                          newFileList.push({'path':path.join(tempAudioDir,file)})
+                        })
+                      })
+                      mainFunction(newFileList,0) 
+                    }
+                  })  
+                }
+                else{
+                  var newOutputFilePath=path.join(tempAudioDir,newFileName)
+                  var command=baseCommand+' inputFilePath="'+fileList[i]+'" outputFilePath="'+newOutputFilePath+'" errorDir="'+errorPathDirectory+'"'
+                  // console.log(command)
+                  child_process.exec(command,function(err,stdout,stderr){
+                    if(err!==null){  
+                      console.log(err)
+                    }
+                    else{
+                      // console.log(stdout)
+                    }
+                    if(i+1<fileList.length){
+
+                      setTimeout(function(){
+                        preWork(fileList,i+1,desiredExt)
+                      })
+                      
+                    }
+                    else{
+                      console.log('callback should fit here')
+                      var newFileList=[]
+                      fs.readdir(tempAudioDir,function(err,files){
+                        files.forEach(function(file){
+                          newFileList.push({'path':path.join(tempAudioDir,file)})
+                        })
+                      })
+                      mainFunction(newFileList,0) 
+                    }
+                  })  
+                }
+              }
+            }
+            else{
+              preWork(fileList,i+1,desiredExt)
+            }
+          
+        }
+        preWork(newFileList,0,'wav')
+      // }
+    // })
   }
   if (!fs.existsSync(fullPathDirectory)){
     fs.mkdirSync(fullPathDirectory);
+    fs.mkdirSync(tempAudioDir);
+    fs.mkdirSync(errorPathDirectory);
+    fs.mkdirSync(wavDirectory)
   }
-  mainFunction(files,0)  
+  
+
+  
+  function moveToTemp(files,i){
+    var origPath=files[i].path
+    // console.log(origPath)
+    // var fileName=path.basename(files[i].path)
+    // var tempAudioPath=path.join(tempAudioDir,fileName)
+    // var buffer = fs.readFileSync(files[i].path)
+    var percentage=Math.floor((i/(files.length-1))*10000)/100+'%'
+      //console.log(path.basename(files[i].path)+' is not wav')
+      //console.log('not wav run')
+    // function checkFileIsAudio(buffer,callback){
+    //   FileType.fromBuffer(buffer).then(function(res){
+    //     if(res==undefined){
+    //       // console.log(fileName+' mime : '+res)
+    //     }
+    //     else{
+    //       fileMime=res.mime.match('audio')!==null
+    //       callback(fileMime)
+    //     }
+    //       upPercentage(percentage)
+    //   }) 
+    // }
+    // checkFileIsAudio(buffer,function(){
+      
+        // if(fs.existsSync(tempAudioPath)==false){
+        //     if(i+1<files.length-1){
+        //       document.getElementById('text').innerHTML= 'copying '+percentage
+        //       document.getElementById('bar').style.width = percentage;
+        //       setTimeout(function(){
+        //         preMastering(path.dirname(origPath),tempAudioDir,errorPathDirectory)
+        //         moveToTemp(files,i+1)
+        //       })
+        //     }
+        //     else{
+        //       document.getElementById('text').innerHTML= 'copying complete'
+        //       document.getElementById('bar').style.width = '100%';
+        //       setTimeout(function(){
+        //         var newFileList=[]
+        //         fs.readdir(tempAudioDir,function(err,files){
+        //           files.forEach(function(file){
+        //             newFileList.push({path:path.join(tempAudioDir,file)})
+        //           })
+        //         })
+        //         mainFunction(newFileList,0) 
+        //       })
+        //     }
+          
+        // }
+        // else{
+        //   if(i+1<files.length-1){
+        //     document.getElementById('text').innerHTML= 'copying '+percentage
+        //     document.getElementById('bar').style.width = percentage;
+        //     setTimeout(function(){
+        //       // console.log('else one')
+        //       moveToTemp(files,i+1)
+        //     })
+        //   }
+        //   else{
+        //     console.log('else one')
+        //     document.getElementById('text').innerHTML= 'copying complete'
+        //     document.getElementById('bar').style.width = '100%';
+        //     setTimeout(function(){
+        //       var newFileList=[]
+        //       fs.readdir(tempAudioDir,function(err,files){
+        //         files.forEach(function(file){
+        //           newFileList.push({path:path.join(tempAudioDir,file)})
+        //         })
+        //       })
+        //       mainFunction(newFileList,0) 
+        //     })
+            
+        //   }
+        // }
+      
+    // })
+    var paths=[]
+    for(var i=0; i<files.length; i++){
+      var fileName=path.basename(files[i].path)
+      var tempAudioPath=path.join(tempAudioDir,fileName)
+      paths.push(files[i].path)
+    }
+    var common = commonPath(paths).commonDir
+    console.log(common)
+    preMastering(common,tempAudioDir,errorPathDirectory)
+    // console.log(common)
+
+  }
+
+  
+    
+  
+  moveToTemp(files,0)
+  // preMastering(files,tempAudioDir,errorPathDirectory)
+  // mainFunction(files,0)  
 }

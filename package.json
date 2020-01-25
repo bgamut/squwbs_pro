@@ -18,6 +18,7 @@
     "@tensorflow/tfjs-node": "^1.5.1",
     "async": "^3.1.0",
     "asyncawait": "^3.0.0",
+    "common-path": "^1.0.0",
     "cubic-spline": "^3.0.3",
     "deep-diff": "^1.0.2",
     "deep-equal": "^2.0.1",
