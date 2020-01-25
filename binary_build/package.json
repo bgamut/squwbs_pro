@@ -1,0 +1,18 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "outputTest.js",
+  "scripts": {
+    "compile": "node-gyp rebuild",
+    "start": "node main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "nan": "^2.14.0",
+    "node-gyp": "^6.1.0",
+    "node-wav": "0.0.2"
+  }
+}
