@@ -602,6 +602,7 @@ document.getElementById('business').onchange = function(e){
     else{
       console.log('finish run')
       console.log(filesInTempAudioList)
+      // todo : python convert.py inputDir="/Users/bernardahn/Splice" outputDir="/Users/bernardahn/Desktop/temp_audio" errorDir="/Users/bernardahn/Desktop/error_files""
       document.getElementById('text').innerHTML='Ready'
       document.getElementById('bar').style.width ='100%'
     }
