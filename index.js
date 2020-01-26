@@ -496,9 +496,9 @@ document.getElementById('business').onchange = function(e){
           }
           catch(e){
             var errorFilePath=path.join(errorPathDirectory,fileName)
-            move(files[i].path,errorFilePath,function(){
-              console.log(fileName+' warmwav Error : '+e)
-            })
+            // move(files[i].path,errorFilePath,function(){
+            //   console.log(fileName+' warmwav Error : '+e)
+            // })
             document.getElementById('text').innerHTML= percentage
             document.getElementById('bar').style.width = percentage;
             setTimeout(function(){
@@ -572,8 +572,9 @@ document.getElementById('business').onchange = function(e){
                 fs.readdir(wavDirectory,function(err,files){
                   files.forEach(function(file){
                     // fs.unlinkSync(file)
-                    var errorFilePath=path.join(errorPathDirectory,fileName)
-                    move(file,errorFilePath,function(){
+                    var tempFilePath=path.join(tempAudioDir,fileName)
+                    var fullPath=path.join(wavDirectory,file)
+                    move(fullPath,tempFilePath,function(){
                       console.log(file+ 'moved to error files')
                     })
                   })
