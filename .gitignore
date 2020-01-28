@@ -180,3 +180,4 @@ build/
 squwbs pro juce/squwbs pro.jucer
 squwbs pro juce/Builds/MacOSX/squwbs pro.xcodeproj/project.pbxproj
 *.pyc
+tests/include/
