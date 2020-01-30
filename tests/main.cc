@@ -1,14 +1,15 @@
 #include <memory.h>
 #include <iostream>
 #include <fstream>
-#include <blob.h>
-#include "./include/sndfile.h"
-#include "./include/gaborator/gaborator.h"
-#include "./include/gaborator/render.h"
-#include "./include/ImageMagick/Magick++.h"
+// #include <blob.h>
+#include "include/sndfile.h"
+#include "include/gaborator/gaborator.h"
+#include "include/gaborator/render.h"
+//#include "include/ImageMagick/Magick++.h"
+#include <Magick++.h>
 int main(int argc, char **argv){
     if(argc<3){
-        std::cerr<<"usage:render input.wav output.pgm\n";
+        std::cerr<<"usage:render input.wav output.png\n";
         exit(1);
     }
     SF_INFO sfinfo;
@@ -148,12 +149,13 @@ int main(int argc, char **argv){
     for(int x=0; x<1024; x++){
         for(int y=0; y<512; y++){
             int index=0;
-            int grayscaleInt=int(gaborator::float2pixel_8bit(amplitudes[index]));
-            int r=255-grayscaleInt;
-            int g=255-grayscaleInt;
-            int b=255;
-            image.pixelColor(x,y,Magick::Color(r,g,b,255));
+            // int grayscaleInt=int(gaborator::float2pixel_8bit(amplitudes[index]));
+            // int r=255-grayscaleInt;
+            // int g=255-grayscaleInt;
+            // int b=255;
+            image.pixelColor(x,y,Magick::Color(1.0,1.0,1.0-amplitudes[index],255));
         }
     }
-    Image.write('output.png');
+    image.write(argv[2]);
+    return 0;
 }   
