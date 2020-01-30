@@ -240,6 +240,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				"HEADER_SEARCH_PATHS[arch=*]" = (
+					"/Users/bernardahn/Documents/GitHub/squwbs_pro/tests/spectrogramtest/spectrogramtest/include/**",
+					"/usr/local/Cellar/imagemagick/7.0.9-17/include/ImageMagick-7",
+					/usr/local/Cellar/libsndfile/1.0.28/include,
+				);
+				"OTHER_LDFLAGS[arch=*]" = (
+					"-L/usr/local/Cellar/imagemagick/7.0.9-17/lib",
+					"-L/usr/local/Cellar/libsndfile/1.0.28/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -248,6 +257,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				"HEADER_SEARCH_PATHS[arch=*]" = (
+					"/Users/bernardahn/Documents/GitHub/squwbs_pro/tests/spectrogramtest/spectrogramtest/include/**",
+					"/usr/local/Cellar/imagemagick/7.0.9-17/include/ImageMagick-7",
+					/usr/local/Cellar/libsndfile/1.0.28/include,
+				);
+				"OTHER_LDFLAGS[arch=*]" = (
+					"-L/usr/local/Cellar/libsndfile/1.0.28/lib",
+					"-L/usr/local/Cellar/libsndfile/1.0.28/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

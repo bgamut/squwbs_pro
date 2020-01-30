@@ -339,7 +339,7 @@ const readdirSync = (p, a = []) => {
 
 
 function warmWav(wavPath, newFilePath){
-    const binding = require('./binary_build/build/Release/addon');
+    const binding = require('./binary_build/spectrogram/build/Release/addon');
     var fs = require('fs');
     var wav = require('node-wav');
     var buffer = fs.readFileSync(wavPath);
@@ -548,7 +548,7 @@ document.getElementById('business').onchange = function(e){
           }
           else{
             var newOutputFilePath=path.join(fullPathDirectory,newFileName)
-            var baseCommand=path.join(process.cwd(),'binary_build/dist/convert')
+            var baseCommand=path.join(process.cwd(),'binary_build/ffmpeg_convert/dist/convert')
             var command=baseCommand+' inputFilePath="'+fileList[i]+'" outputFilePath="'+newOutputFilePath+'" errorDir="'+errorPathDirectory+'"'
             // console.log(command)
             child_process.exec(command,function(err,stdout,stderr){
@@ -596,7 +596,7 @@ document.getElementById('business').onchange = function(e){
   const preMastering=function(inputDir,tempAudioDir,errorPathDirectory){
     // document.getElementById('text').innerHTML= 'preprocessing in progress'
     // document.getElementById('bar').style.color = 'green';
-    var baseCommand=path.join(process.cwd(),'binary_build/dist/convert')
+    var baseCommand=path.join(process.cwd(),'binary_build/ffmpeg_convert/dist/convert')
       // todo : python convert.py inputDir="/Users/bernardahn/Splice" outputDir="/Users/bernardahn/Desktop/temp_audio" errorDir="/Users/bernardahn/Desktop/error_files""
       // var newFileList=[]
       var newFileList=readdirSync(inputDir)
