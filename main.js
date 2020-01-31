@@ -1,8 +1,8 @@
 const { app, BrowserWindow,Tray } = require('electron')
-require('electron-reload').apply(__dirname,{
-  
-  hardResetMethod:'exit'
-})
+const isDev= require('electron-is-dev')
+// require('electron-reload').apply(__dirname,{
+//   hardResetMethod:'exit'
+// })
 function createWindow () {
   // Create the browser window.
   let win = new BrowserWindow({
@@ -21,9 +21,14 @@ function createWindow () {
     appIcon:__dirname + '/squwbs.icns',
     
   })
+  win.loadURL(
+    isDev 
+    ? "http://localhost:3000" 
+    : `file://${path.join(__dirname,"../app/build/index.html")}`
+  )
 
   // and load the index.html of the app.
-  win.loadFile('index.html')
+  // win.loadFile('index.html')
   const tray = new Tray(__dirname+'/tray_icon.png')
   tray.on('click',()=>{
     if(win.isVisible() == false){

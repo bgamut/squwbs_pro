@@ -1,18 +1,20 @@
 {
-  "name": "tests",
+  "name": "spectrogram",
   "version": "1.0.0",
   "description": "",
-  "main": "export.js",
+  "main": "index.js",
   "scripts": {
     "compile": "node-gyp rebuild",
     "start": "node main.js"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "canvas": "^2.6.1",
     "nan": "^2.14.0",
     "node-gyp": "^6.1.0",
-    "node-wav": "0.0.2"
+    "node-wav": "0.0.2",
+    "p5": "^0.10.2",
+    "phantom": "^6.3.0"
   }
 }

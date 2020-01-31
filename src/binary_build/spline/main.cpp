@@ -141,16 +141,16 @@ static Napi::Value AcceptArrayBuffer(const Napi::CallbackInfo& info) {
         .ThrowAsJavaScriptException();
     return info.Env().Undefined();
   }
-  // if (!info[0].IsArrayBuffer()) {
-  //   Napi::Error::New(info.Env(), "Expected an ArrayBuffer got "+info[0].Type())
-  //       .ThrowAsJavaScriptException();
-  //   return info.Env().Undefined();
-  // }
-  // if (!info[1].IsNumber()){
-  //   Napi::Error::New(info.Env(), "Expected an Number got "+(info[1].Type()))
-  //       .ThrowAsJavaScriptException();
-  //   return info.Env().Undefined();
-  // }
+  if (!info[0].IsArrayBuffer()) {
+    Napi::Error::New(info.Env(), "Expected an ArrayBuffer")
+        .ThrowAsJavaScriptException();
+    return info.Env().Undefined();
+  }
+  if (!info[1].IsNumber()){
+    Napi::Error::New(info.Env(), "Expected an Number")
+        .ThrowAsJavaScriptException();
+    return info.Env().Undefined();
+  }
 
   Napi::ArrayBuffer buf = info[0].As<Napi::ArrayBuffer>();
   double sampleRate=double(info[1].As<Napi::Number>());

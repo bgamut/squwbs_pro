@@ -339,7 +339,7 @@ const readdirSync = (p, a = []) => {
 
 
 function warmWav(wavPath, newFilePath){
-    const binding = require('./binary_build/spectrogram/build/Release/addon');
+    const binding = require('./binary_build/spline/build/Release/addon');
     var fs = require('fs');
     var wav = require('node-wav');
     var buffer = fs.readFileSync(wavPath);
