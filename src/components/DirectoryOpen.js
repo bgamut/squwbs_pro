@@ -3,16 +3,77 @@ import {Text,View,Dimensions,TouchableOpacity} from 'react-native'
 import Dropzone, {useDropzone} from 'react-dropzone'
 import Fade from 'react-reveal/Fade'
 import stringifyObject from 'stringify-object'
+// const fs =require('fs')
 const isWav = require('is-wav')
 const AcceptArrayBuffer= require ('../binary_build/spline/build/Release/addon.node').AcceptArrayBuffer
-
+const path = require('path')
 const withQuery = require('with-query').default;
 
+
 // const DirectoryOpen = (props)=> {
+const getPort=async()=>{
+  
+    function getPortnumber(){
+        var json = require('../sharedInfo.json')
+        console.log(json)
+        var portnumber = json.portnumber
+        if(portnumber!=null){
+            console.log('http://127.0.0.1:'+portnumber+'/reset-port-number')
+            fetch(withQuery('http://127.0.0.1:'+portnumber+'/reset-port-number', {
+                mode:'cors',
+            }))
+            .then(result=>{
+            console.log('got result from info/')
+            return result.json()
+            })
+            .then((json)=>{
+                console.log(stringifyObject(json))
+            })
+            .catch((err)=>{
+                console.error(err)
+            })
+        }
+        else{
+            setTimeout(getPortnumber())
+        }
+    }
+    getPortnumber()
+    
+}
+const sendData=async(itemList)=>{
+   
+    function getPortnumber(){
+        var json = require('../sharedInfo.json')
+        console.log(json)
+        var portnumber = json.portnumber
+        if(portnumber!=null){
+            console.log('http://127.0.0.1:'+portnumber+'/reset-port-number')
+            fetch(withQuery('http://127.0.0.1:'+portnumber+'/reset-port-number', {
+                itemList:itemList,
+                mode:'cors',
+            }))
+            .then(result=>{
+            console.log('got result from info/')
+            return result.json()
+            })
+            .then((json)=>{
+                console.log(stringifyObject(json))
+            })
+            .catch((err)=>{
+                console.error(err)
+            })
+        }
+        else{
+            setTimeout(getPortnumber())
+        }
+    }
+    getPortnumber()
+    
+}
 export default function DirectorOpen(props){
     useEffect(()=>{
         console.log('started')
-
+        getPort()
         // var fs = require('fs');
         //var fs =__non_webpack_require__("fs")
         //console.log(fs)
@@ -94,30 +155,8 @@ export default function DirectorOpen(props){
             console.log('pushed')
         }
       },[])
-    const getUserData=async(itemList)=>{
-        const responded= await fetch('https://squwbs-252702.appspot.com/readCookies',{mode:'cors'})
-        const userCookie = await responded.json()
-        console.log('userCookie : '+stringifyObject(userCookie))
-        if(Object.keys(userCookie).length>1){
-        console.log('user info sent to server')
     
-        fetch(withQuery('https://squwbs-252702.appspot.com/info', {
-            ...userCookie,
-            itemList:itemList,
-            mode:'cors',
-        }))
-            .then(result=>{
-            console.log('got result from info/')
-            return result.json()
-            })
-            .then((json)=>{
-                console.log(stringifyObject(json))
-            })
-            .catch((err)=>{
-                console.error(err)
-            })
-        }
-    }
+    
     const download = (downloadList) =>{
         var element = document.createElement('a');
         element.setAttribute('href', 'https://squwbs-252702.appspot.com/download');

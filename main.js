@@ -1,5 +1,6 @@
 const { app, BrowserWindow,Tray } = require('electron')
 const path = require('path')
+const fs=require('fs')
 // const isDev= require('electron-is-dev')
 const isDev=false
 // const child_process=require("child_process")
@@ -11,12 +12,17 @@ const isDev=false
 // })
 function createWindow () {
   var portfinder = require('portfinder')
-  var portnumber=3000
+  
   function findPort(){
       portfinder.getPort(function(err,port){
           console.log("express server started in localhost:"+port)
-          require("./src/expressServer/server").expressServer(port)
-          win.loadURL("http://localhost:"+port)
+          var originalJson=JSON.parse(fs.readFileSync("./src/sharedInfo.json"))
+          originalJson.portnumber=port
+          console.log(originalJson)
+          fs.writeFile("./src/sharedInfo.json",JSON.stringify(originalJson),function(){
+            require("./src/expressServer/server").expressServer(port)
+            win.loadURL("http://localhost:"+port)
+          })
       })  
   }
   findPort()

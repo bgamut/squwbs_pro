@@ -47,6 +47,26 @@ app.use(allowCrossDomain);
 app.get('/',cors(), function (req, res) {
     res.render(path.join(__dirname, 'build','index.html'));
 })
+app.get('/reset-port-number',cors(),function(req,res){
+  console.log(path.join(__dirname,"../sharedInfo.json"))
+  var json=JSON.parse(fs.readFileSync(path.join(__dirname,"../sharedInfo.json")))
+  json.portnumber=null
+  fs.writeFile(path.join(__dirname,"../sharedInfo.json"),JSON.stringify(json),function(){
+    console.log('port number reset')
+  })
+  res.send({message:'port number reset'})
+})
+app.get('/files',cors(),function(req,res){
+  console.log(req.query)
+  console.log(path.join(__dirname,"../sharedInfo.json"))
+  var originalJson=JSON.parse(fs.readFileSync(path.join(__dirname,"../sharedInfo.json")))
+  //console.log(originalJson)
+  originalJson.portnumber=null
+  fs.writeFile(path.join(__dirname,"../sharedInfo.json"),JSON.stringify(originalJson),function(){
+    console.log(path.join(__dirname,"../sharedInfo.json")+' changed')
+  })
+  res.send({data:'hello world'})
+})
 console.log(path.join(__dirname,'../../build'))
 console.log('server started in port number : '+String(portnumber))
 app.listen(process.env['PORT'] || portnumber);
