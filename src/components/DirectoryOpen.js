@@ -3,8 +3,10 @@ import {Text,View,Dimensions,TouchableOpacity} from 'react-native'
 import Dropzone, {useDropzone} from 'react-dropzone'
 import Fade from 'react-reveal/Fade'
 import stringifyObject from 'stringify-object'
+
 // const fs =require('fs')
 const isWav = require('is-wav')
+const clearModule = require('clear-module');
 const AcceptArrayBuffer= require ('../binary_build/spline/build/Release/addon.node').AcceptArrayBuffer
 const path = require('path')
 const withQuery = require('with-query').default;
@@ -70,6 +72,17 @@ export default function DirectorOpen(props){
             
         }
     }  
+    function readTextFile(file, callback) {
+        var rawFile = new XMLHttpRequest();
+        rawFile.overrideMimeType("application/json");
+        rawFile.open("GET", file, true);
+        rawFile.onreadystatechange = function() {
+            if (rawFile.readyState === 4 && rawFile.status == "200") {
+                callback(rawFile.responseText);
+            }
+        }
+        rawFile.send(null);
+    }
     const handshake=()=>{
         var portnum = require('../sharedInfo.json').portnumber
         var queries={number:Math.random()}
@@ -89,6 +102,8 @@ export default function DirectorOpen(props){
                 }
             })
             .catch((err)=>{
+                
+                clearModule('../sharedInfo.json')
                 console.error(err)
                 setTimeout(function(){
                     console.log('err')
@@ -97,6 +112,8 @@ export default function DirectorOpen(props){
             })
         }
         else{
+           
+            clearModule('../sharedInfo.json')
             setTimeout(function(){
                 console.log('else')
                 handshake()
