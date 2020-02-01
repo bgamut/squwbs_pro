@@ -11,148 +11,113 @@ const withQuery = require('with-query').default;
 
 
 // const DirectoryOpen = (props)=> {
-const getPort=async()=>{
   
-    function getPortnumber(){
-        var json = require('../sharedInfo.json')
-        console.log(json)
-        var portnumber = json.portnumber
-        if(portnumber!=null){
-            console.log('http://127.0.0.1:'+portnumber+'/reset-port-number')
-            fetch(withQuery('http://127.0.0.1:'+portnumber+'/reset-port-number', {
-                mode:'cors',
-            }))
-            .then(result=>{
-            console.log('got result from info/')
-            return result.json()
-            })
-            .then((json)=>{
-                console.log(stringifyObject(json))
-            })
-            .catch((err)=>{
-                console.error(err)
-            })
-        }
-        else{
-            setTimeout(getPortnumber())
-        }
-    }
-    getPortnumber()
-    
-}
-const sendData=async(itemList)=>{
-   
-    function getPortnumber(){
-        var json = require('../sharedInfo.json')
-        console.log(json)
-        var portnumber = json.portnumber
-        if(portnumber!=null){
-            console.log('http://127.0.0.1:'+portnumber+'/reset-port-number')
-            fetch(withQuery('http://127.0.0.1:'+portnumber+'/reset-port-number', {
-                itemList:itemList,
-                mode:'cors',
-            }))
-            .then(result=>{
-            console.log('got result from info/')
-            return result.json()
-            })
-            .then((json)=>{
-                console.log(stringifyObject(json))
-            })
-            .catch((err)=>{
-                console.error(err)
-            })
-        }
-        else{
-            setTimeout(getPortnumber())
-        }
-    }
-    getPortnumber()
-    
-}
+
 export default function DirectorOpen(props){
+    const [port,setPort]=useState(8000)
+    const getPort=async()=>{
+        function getPortnumber(){
+            var json = require('../sharedInfo.json')
+            var portnumber = json.portnumber
+            if(portnumber!=null){
+                setPort(portnumber)
+                fetch(withQuery('http://127.0.0.1:'+portnumber+'/reset-port-number', {
+                    mode:'cors',
+                }))
+                .then(result=>{
+                // var json = await result.json()
+                return result.json()
+                })
+                .then((json)=>{
+                    console.log(stringifyObject(json))
+                })
+                .catch((err)=>{
+                    console.error(err)
+                })
+            }
+            else{
+                setTimeout(getPortnumber())
+            }
+        }
+        getPortnumber()
+        
+    }
+    const sendData=async(itemList)=>{
+       
+        function getPortnumber(){
+            var json = require('../sharedInfo.json')
+            console.log(json)
+            var portnumber = json.portnumber
+            if(portnumber!=null){
+                console.log('http://127.0.0.1:'+portnumber+'/reset-port-number')
+                fetch(withQuery('http://127.0.0.1:'+portnumber+'/reset-port-number', {
+                    itemList:itemList,
+                    mode:'cors',
+                }))
+                .then(result=>{
+                // var json = await result.json()
+                return result.json()
+                })
+                .then((json)=>{
+                    console.log(stringifyObject(json))
+                })
+                .catch((err)=>{
+                    console.error(err)
+                })
+            }
+            else{
+                setTimeout(getPortnumber())
+            }
+        }
+        getPortnumber()
+        
+    }
+    
+    const restApi=async(endPoint,queries,cb)=>{
+        var json = require('../sharedInfo.json')
+        //console.log(json)
+        var portnumber = port
+        if(portnumber!=null){
+            console.log('http://127.0.0.1:'+portnumber+'/'+endPoint)
+            console.log({
+                ...queries,
+                mode:'cors',
+            })
+            fetch(withQuery('http://127.0.0.1:'+portnumber+'/'+endPoint, {
+                ...queries,
+                mode:'cors',
+            }))
+            .then(result=>{
+                return result.json()
+            })
+            .then((json)=>{
+                console.log(stringifyObject(json))
+            })
+            .catch((err)=>{
+                console.error(err)
+            })
+        }
+        else{
+            if(cb!=undefined){
+                setTimeout(cb(),3000)
+            }
+            
+        }
+    }  
     useEffect(()=>{
         console.log('started')
         getPort()
-        // var fs = require('fs');
-        //var fs =__non_webpack_require__("fs")
-        //console.log(fs)
+        // restApi('handshake',{"number":Math.random()})
         document.getElementById('business').onchange = function(e){ 
-            
             var files = e.target.files; 
-            //console.log(files)
-
-            // for (var index in files){
-                
-            //     console.log(stat)
-            // }
+            var filePaths =[];
+            var obj={}
             for (var i = 0; i < files.length; i++) {
-        
-                (function(file) {
-        
-                  console.log(file.path)
-                  var reader = new FileReader();
-                  reader.onload = function(e) { 
-                    
-                    
-                    var buffer = reader.result
-                    console.log(typeof(buffer))
-                    // let int32Factor=Math.pow(2,31)
-                    // let result = wav.decode(buffer)
-                    
-                    // let left = result.channelData[0].slice()
-                    // let right = result.channelData[1].slice()
-                    // //console.log('sound:',left)
-                    // var max = 0
-                    // for (var i = 0; i<left.length; i++){
-                    //   if(max<Math.abs(left[i])){
-                    //     max=Math.abs(left[i])
-                    //   }
-                    //   if(max<Math.abs(right[i])){
-                    //     max=Math.abs(right[i])
-                    //   }
-                    // }
-                    // for (var i = 0; i<left.length; i++){
-                    //   left[i]=((left[i]/max))
-                    //   right[i]=((right[i]/max))
-                    //   //console.log(left[i])
-                    // }
-                    // const binSize=1024
-                    // var meanLeft=0
-                    // var meanRight=0
-                    // var maxLeft=0
-                    // var maxRight=0
-                    // var lastLeftSample=0
-                    // var lastRightSample=0
-                    // for(var i =0; i<left.length; i++){
-                    //   console.log(temp)
-                    //   left[i]=(temp.left)
-                    //   right[i]=(temp.right)
-                      
-                    // }
-                    // var encoded=wav.encode([left,right],{sampleRate:result.sampleRate, float:true, bitDepth:16}).slice()
-
-                    // var blob = new Blob([encoded],{
-                    //   type:'audio/wav'
-                    // })
-                    // var url=window.URL.createObjectURL(blob)
-                    // console.log(url)
-                    // var a = document.createElement('a')
-                    // a.setAttribute('href',url)     
-                    // a.setAttribute('download','master.wav')
-                    // a.click()
-                    // a.remove()
-                    // setTimeout(function(){
-                    //   window.URL.revokeObjectURL(url)
-                    // },1000)
-        
-                  };
-                  reader.readAsArrayBuffer(file)
-                  //reader.readAsDataURL(file)
-                  //reader.readAsBinaryString(file)
-                })(files[i]);
-              }
-            console.log('pushed')
+                filePaths.push(files[i].path)
+            }
+            var fileIndex=0
+            obj.files=filePaths
+            restApi('file-path-list',obj)
         }
       },[])
     

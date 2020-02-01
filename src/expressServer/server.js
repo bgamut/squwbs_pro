@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser')
 var flash = require('connect-flash')
 var net = require('net')
 var fs=require('fs')
+var isWav=require('is-wav')
 
 console.log(require('path').join(require('os').homedir(), 'Desktop'))
 var server = net.createServer(function(socket){
@@ -47,8 +48,13 @@ app.use(allowCrossDomain);
 app.get('/',cors(), function (req, res) {
     res.render(path.join(__dirname, 'build','index.html'));
 })
+app.get('/handshake',cors(),function(req,res){
+  var obj={message:'hand shook',number:req.query}
+  console.log(JSON.stringify(obj))
+  res.send(obj)
+})
 app.get('/reset-port-number',cors(),function(req,res){
-  console.log(path.join(__dirname,"../sharedInfo.json"))
+  //console.log(path.join(__dirname,"../sharedInfo.json"))
   var json=JSON.parse(fs.readFileSync(path.join(__dirname,"../sharedInfo.json")))
   json.portnumber=null
   fs.writeFile(path.join(__dirname,"../sharedInfo.json"),JSON.stringify(json),function(){
@@ -56,18 +62,20 @@ app.get('/reset-port-number',cors(),function(req,res){
   })
   res.send({message:'port number reset'})
 })
-app.get('/files',cors(),function(req,res){
-  console.log(req.query)
-  console.log(path.join(__dirname,"../sharedInfo.json"))
-  var originalJson=JSON.parse(fs.readFileSync(path.join(__dirname,"../sharedInfo.json")))
-  //console.log(originalJson)
-  originalJson.portnumber=null
-  fs.writeFile(path.join(__dirname,"../sharedInfo.json"),JSON.stringify(originalJson),function(){
-    console.log(path.join(__dirname,"../sharedInfo.json")+' changed')
-  })
-  res.send({data:'hello world'})
+app.get('/file-path-list',cors(),function(req,res){
+  var fileList=[]
+  filesListLength=Object.keys(req.query.files).length
+  for (var i =0; i<filesListLength; i++){
+    if(path.extname(req.query.files[i])=='.wav'){
+      console.log(isWav(fs.readFileSync(req.query.files[i]))+req.query.files[i])
+      // console.log(req.query.files[i])
+      fileList.push(req.query.files[i])
+    } 
+  }
+  console.log(fileList)
+  res.send({data:fileList})
 })
-console.log(path.join(__dirname,'../../build'))
+//console.log(path.join(__dirname,'../../build'))
 console.log('server started in port number : '+String(portnumber))
 app.listen(process.env['PORT'] || portnumber);
 }
