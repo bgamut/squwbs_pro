@@ -14,69 +14,33 @@ const withQuery = require('with-query').default;
   
 
 export default function DirectorOpen(props){
-    const [port,setPort]=useState(8000)
-    const getPort=async()=>{
-        function getPortnumber(){
-            var json = require('../sharedInfo.json')
-            var portnumber = json.portnumber
-            if(portnumber!=null){
-                setPort(portnumber)
-                fetch(withQuery('http://127.0.0.1:'+portnumber+'/reset-port-number', {
-                    mode:'cors',
-                }))
-                .then(result=>{
-                // var json = await result.json()
-                return result.json()
-                })
-                .then((json)=>{
-                    console.log(stringifyObject(json))
-                })
-                .catch((err)=>{
-                    console.error(err)
-                })
-            }
-            else{
-                setTimeout(getPortnumber())
-            }
+    const [portnumber,setPortnumber]=useState(8000)
+    const [handshakeStatus,setHandshakeStatus]=useState(false)
+    // var handshakeStatus=false
+    const resetPortSettings=async()=>{
+        function getPortnumberFromJSON(){
+            setPortnumber(portnumber)
+            fetch(withQuery('http://127.0.0.1:'+portnumber+'/reset-port-number', {
+                mode:'cors',
+            }))
+            .then(result=>{
+            return result.json()
+            })
+            .then((json)=>{
+                console.log(stringifyObject(json))
+            })
+            .catch((err)=>{
+                console.error(err)
+            })
         }
-        getPortnumber()
-        
-    }
-    const sendData=async(itemList)=>{
-       
-        function getPortnumber(){
-            var json = require('../sharedInfo.json')
-            console.log(json)
-            var portnumber = json.portnumber
-            if(portnumber!=null){
-                console.log('http://127.0.0.1:'+portnumber+'/reset-port-number')
-                fetch(withQuery('http://127.0.0.1:'+portnumber+'/reset-port-number', {
-                    itemList:itemList,
-                    mode:'cors',
-                }))
-                .then(result=>{
-                // var json = await result.json()
-                return result.json()
-                })
-                .then((json)=>{
-                    console.log(stringifyObject(json))
-                })
-                .catch((err)=>{
-                    console.error(err)
-                })
-            }
-            else{
-                setTimeout(getPortnumber())
-            }
-        }
-        getPortnumber()
+        getPortnumberFromJSON()
         
     }
     
     const restApi=async(endPoint,queries,cb)=>{
         var json = require('../sharedInfo.json')
         //console.log(json)
-        var portnumber = port
+        
         if(portnumber!=null){
             console.log('http://127.0.0.1:'+portnumber+'/'+endPoint)
             console.log({
@@ -92,9 +56,11 @@ export default function DirectorOpen(props){
             })
             .then((json)=>{
                 console.log(stringifyObject(json))
+                return(stringifyObject(json))
             })
             .catch((err)=>{
                 console.error(err)
+                return(null)
             })
         }
         else{
@@ -104,10 +70,45 @@ export default function DirectorOpen(props){
             
         }
     }  
+    const handshake=()=>{
+        var portnum = require('../sharedInfo.json').portnumber
+        var queries={number:Math.random()}
+        console.log('http://127.0.0.1:'+portnum+'/handshake')
+        if(portnum!=null){
+            fetch(withQuery('http://127.0.0.1:'+portnum+'/handshake', {
+                ...queries,
+                mode:'cors',
+            }))
+            .then(result=>{
+                return result.json()
+            })
+            .then((json)=>{
+                if(json.number=queries.number){
+                    setHandshakeStatus(true)
+                    setPortnumber(portnum)
+                }
+            })
+            .catch((err)=>{
+                console.error(err)
+                setTimeout(function(){
+                    console.log('err')
+                    handshake()
+                },15000)
+            })
+        }
+        else{
+            setTimeout(function(){
+                console.log('else')
+                handshake()
+            },15000)
+        }
+    }  
+    
     useEffect(()=>{
         console.log('started')
-        getPort()
-        // restApi('handshake',{"number":Math.random()})
+        handshake()
+        //getPort()
+        
         document.getElementById('business').onchange = function(e){ 
             var files = e.target.files; 
             var filePaths =[];
@@ -119,8 +120,18 @@ export default function DirectorOpen(props){
             obj.files=filePaths
             restApi('file-path-list',obj)
         }
-      },[])
+    },[])
+    useEffect(()=>{
+        if(handshakeStatus==true){
+            console.log("handshake successful")
+            resetPortSettings()
+        }
+    },[handshakeStatus])
     
+    useEffect(()=>{
+        console.log('portnumber status changed!')
+        console.log(portnumber)
+    },[portnumber])
     
     const download = (downloadList) =>{
         var element = document.createElement('a');

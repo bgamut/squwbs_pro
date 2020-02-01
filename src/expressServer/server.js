@@ -7,6 +7,7 @@ var flash = require('connect-flash')
 var net = require('net')
 var fs=require('fs')
 var isWav=require('is-wav')
+const binding = require('../binary_build/spline/build/Release/addon');
 
 console.log(require('path').join(require('os').homedir(), 'Desktop'))
 var server = net.createServer(function(socket){
@@ -49,7 +50,7 @@ app.get('/',cors(), function (req, res) {
     res.render(path.join(__dirname, 'build','index.html'));
 })
 app.get('/handshake',cors(),function(req,res){
-  var obj={message:'hand shook',number:req.query}
+  var obj={message:'hand shook',number:req.query.number}
   console.log(JSON.stringify(obj))
   res.send(obj)
 })
