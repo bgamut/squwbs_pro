@@ -1,14 +1,31 @@
 const { app, BrowserWindow,Tray } = require('electron')
-const isDev= require('electron-is-dev')
-// require('electron-reload').apply(__dirname,{
-//   hardResetMethod:'exit'
+const path = require('path')
+// const isDev= require('electron-is-dev')
+const isDev=false
+// const child_process=require("child_process")
+// // require('electron-reload').apply(__dirname,{
+// //   hardResetMethod:'exit'
+// // })
+// child_process.exec("BROWSER=none yarn react-start",function(){
+//   console.log('cross-env started')
 // })
 function createWindow () {
+  var portfinder = require('portfinder')
+  var portnumber=3000
+  function findPort(){
+      portfinder.getPort(function(err,port){
+          console.log("express server started in localhost:"+port)
+          require("./src/expressServer/server").expressServer(port)
+          win.loadURL("http://localhost:"+port)
+      })  
+  }
+  findPort()
   // Create the browser window.
   let win = new BrowserWindow({
     //width: 1024,
     width: 289,
-    height: 77,
+    // height: 77,
+    height:150,
     webPreferences: {
       nodeIntegration: true
     },
@@ -21,14 +38,20 @@ function createWindow () {
     appIcon:__dirname + '/squwbs.icns',
     
   })
-  win.loadURL(
-    isDev 
-    ? "http://localhost:3000" 
-    : `file://${path.join(__dirname,"../app/build/index.html")}`
-  )
-
+  // win.loadURL(
+  //   isDev 
+  //   ? "http://localhost:3000" 
+  //   : `file://${path.join(__dirname,"/build/index.html")}`
+  // )
+  // isDev
+  // ? win.loadURL("http://localhost:3000")
+  // : win.loadFile("dist/index.html")
+  
+  
+  // win.loadURL("http://localhost:3000")
+  // win.loadURL("http://localhost:"+port)
   // and load the index.html of the app.
-  // win.loadFile('index.html')
+  //win.loadFile('app/dist/index.html')
   const tray = new Tray(__dirname+'/tray_icon.png')
   tray.on('click',()=>{
     if(win.isVisible() == false){

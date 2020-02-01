@@ -3,6 +3,7 @@ import {Text,View,Dimensions,TouchableOpacity} from 'react-native'
 import Dropzone, {useDropzone} from 'react-dropzone'
 import Fade from 'react-reveal/Fade'
 import stringifyObject from 'stringify-object'
+const isWav = require('is-wav')
 const AcceptArrayBuffer= require ('../binary_build/spline/build/Release/addon.node').AcceptArrayBuffer
 
 const withQuery = require('with-query').default;
@@ -10,7 +11,86 @@ const withQuery = require('with-query').default;
 // const DirectoryOpen = (props)=> {
 export default function DirectorOpen(props){
     useEffect(()=>{
+        console.log('started')
+
+        // var fs = require('fs');
+        //var fs =__non_webpack_require__("fs")
+        //console.log(fs)
         document.getElementById('business').onchange = function(e){ 
+            
+            var files = e.target.files; 
+            //console.log(files)
+
+            // for (var index in files){
+                
+            //     console.log(stat)
+            // }
+            for (var i = 0; i < files.length; i++) {
+        
+                (function(file) {
+        
+                  console.log(file.path)
+                  var reader = new FileReader();
+                  reader.onload = function(e) { 
+                    
+                    
+                    var buffer = reader.result
+                    console.log(typeof(buffer))
+                    // let int32Factor=Math.pow(2,31)
+                    // let result = wav.decode(buffer)
+                    
+                    // let left = result.channelData[0].slice()
+                    // let right = result.channelData[1].slice()
+                    // //console.log('sound:',left)
+                    // var max = 0
+                    // for (var i = 0; i<left.length; i++){
+                    //   if(max<Math.abs(left[i])){
+                    //     max=Math.abs(left[i])
+                    //   }
+                    //   if(max<Math.abs(right[i])){
+                    //     max=Math.abs(right[i])
+                    //   }
+                    // }
+                    // for (var i = 0; i<left.length; i++){
+                    //   left[i]=((left[i]/max))
+                    //   right[i]=((right[i]/max))
+                    //   //console.log(left[i])
+                    // }
+                    // const binSize=1024
+                    // var meanLeft=0
+                    // var meanRight=0
+                    // var maxLeft=0
+                    // var maxRight=0
+                    // var lastLeftSample=0
+                    // var lastRightSample=0
+                    // for(var i =0; i<left.length; i++){
+                    //   console.log(temp)
+                    //   left[i]=(temp.left)
+                    //   right[i]=(temp.right)
+                      
+                    // }
+                    // var encoded=wav.encode([left,right],{sampleRate:result.sampleRate, float:true, bitDepth:16}).slice()
+
+                    // var blob = new Blob([encoded],{
+                    //   type:'audio/wav'
+                    // })
+                    // var url=window.URL.createObjectURL(blob)
+                    // console.log(url)
+                    // var a = document.createElement('a')
+                    // a.setAttribute('href',url)     
+                    // a.setAttribute('download','master.wav')
+                    // a.click()
+                    // a.remove()
+                    // setTimeout(function(){
+                    //   window.URL.revokeObjectURL(url)
+                    // },1000)
+        
+                  };
+                  reader.readAsArrayBuffer(file)
+                  //reader.readAsDataURL(file)
+                  //reader.readAsBinaryString(file)
+                })(files[i]);
+              }
             console.log('pushed')
         }
       },[])
