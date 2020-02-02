@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['squwbs_pro.py'],
-             pathex=['/Users/bernardahn/Documents/GitHub/squwbs_pro'],
+             pathex=['/Users/bernardahn/Documents/GitHub/squwbs_pro/Resources/app'],
              binaries=[],
              datas=[],
              hiddenimports=[],
