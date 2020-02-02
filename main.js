@@ -16,7 +16,7 @@ function createWindow () {
   function findPort(){
       portfinder.getPort(function(err,port){
           console.log("express server started in localhost:"+port)
-          var originalJson=JSON.parse(fs.readFileSync("./src/sharedInfo.json"))
+          var originalJson=JSON.parse(fs.readFileSync("./src/assets/sharedInfo.json"))
           originalJson.portnumber=port
           console.log(originalJson)
           fs.writeFile("./src/sharedInfo.json",JSON.stringify(originalJson),function(){
@@ -58,7 +58,7 @@ function createWindow () {
   // win.loadURL("http://localhost:"+port)
   // and load the index.html of the app.
   //win.loadFile('app/dist/index.html')
-  const tray = new Tray(__dirname+'/tray_icon.png')
+  const tray = new Tray(__dirname+'/src/assets/tray_icon.png')
   tray.on('click',()=>{
     if(win.isVisible() == false){
       win.show()

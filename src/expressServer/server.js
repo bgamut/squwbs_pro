@@ -56,9 +56,9 @@ app.get('/handshake',cors(),function(req,res){
 })
 app.get('/reset-port-number',cors(),function(req,res){
   //console.log(path.join(__dirname,"../sharedInfo.json"))
-  var json=JSON.parse(fs.readFileSync(path.join(__dirname,"../sharedInfo.json")))
+  var json=JSON.parse(fs.readFileSync(path.join(__dirname,"../assets/sharedInfo.json")))
   json.portnumber=null
-  fs.writeFile(path.join(__dirname,"../sharedInfo.json"),JSON.stringify(json),function(){
+  fs.writeFile(path.join(__dirname,"../assets/sharedInfo.json"),JSON.stringify(json),function(){
     console.log('port number reset')
   })
   res.send({message:'port number reset'})

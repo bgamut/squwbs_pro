@@ -9,8 +9,8 @@
     "start-dev": "concurrently \"cross-env BROWSER=none yarn react-start\" \"wait-on http://localhost:3000 && electron .\"",
     "start": "electron .",
     "build": "sudo bash run_packager.sh",
-    "buildpython": "pyinstaller --onefile spline.py",
-    "pythonbuild": "pyinstaller --onefile spline.py",
+    "buildpython": "pyinstaller --onefile squwbs_pro.py && mv /Users/bernardahn/Documents/GitHub/squwbs_pro/dist/squwbs_pro /Users/bernardahn/Documents/GitHub/squwbs_pro/MacOS/squwbs_pro && rmdir /Users/bernardahn/Documents/GitHub/squwbs_pro/dist",
+    "pythonbuild": "pyinstaller --onefile squwbs_pro.py && mv /Users/bernardahn/Documents/GitHub/squwbs_pro/dist/squwbs_pro /Users/bernardahn/Documents/GitHub/squwbs_pro/MacOS/squwbs_pro && rmdir /Users/bernardahn/Documents/GitHub/squwbs_pro/dist",
     "electronbuild": "sudo bash run_packager.sh",
     "buildelectron": "sudo bash run_packager.sh",
     "react-start": "react-scripts start",
@@ -76,6 +76,7 @@
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-twitter": "^1.0.4",
+    "pkg": "^4.4.2",
     "pngjs": "^3.4.0",
     "portfinder": "^1.0.25",
     "python-shell": "^1.0.8",
@@ -122,5 +123,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "pkg": {
+    "assets": "src/assets/*"
   }
 }

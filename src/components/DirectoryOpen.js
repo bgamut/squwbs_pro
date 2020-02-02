@@ -40,7 +40,7 @@ export default function DirectorOpen(props){
     }
     
     const restApi=async(endPoint,queries,cb)=>{
-        var json = require('../sharedInfo.json')
+        var json = require('../assets/sharedInfo.json')
         //console.log(json)
         
         if(portnumber!=null){

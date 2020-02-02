@@ -181,3 +181,6 @@ squwbs pro juce/squwbs pro.jucer
 squwbs pro juce/Builds/MacOSX/squwbs pro.xcodeproj/project.pbxproj
 *.pyc
 tests/include/
+src/assets/node-v13.3.0-darwin-x64
+MacOS/libSystem.B.dylib
+MacOS/libz.1.dylib
