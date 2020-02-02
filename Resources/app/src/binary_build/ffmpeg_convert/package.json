@@ -1,0 +1,12 @@
+{
+  "name": "ffmpeg_convert",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "pyinstaller --onefile convert.py",
+    "build": "pyinstaller --onefile convert.py"
+  },
+  "author": "",
+  "license": "ISC"
+}

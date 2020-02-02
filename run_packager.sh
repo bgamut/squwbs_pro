@@ -1,1 +1,0 @@
-electron-packager . --platform=darwin --overwrite --electron=4.0.0 --icon=/Users/bernardahn/Documents/GitHub/squwbs_pro/squwbs.icns
