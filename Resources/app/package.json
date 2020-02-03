@@ -11,6 +11,8 @@
     "build": "sudo bash run_packager.sh",
     "buildpython": "pyinstaller --onefile squwbs_pro.py && mv ./dist/squwbs_pro ../../MacOS/squwbs_pro && rmdir ./dist",
     "pythonbuild": "pyinstaller --onefile squwbs_pro.py && mv ./dist/squwbs_pro ../../MacOS/squwbs_pro && rmdir ./dist",
+    "postbuildpython":"sudo python post_python_build.py",
+    "postpythonbuild":"sudo python post_python_build.py",
     "electronbuild": "sudo bash run_packager.sh",
     "buildelectron": "sudo bash run_packager.sh",
     "react-start": "react-scripts start",
