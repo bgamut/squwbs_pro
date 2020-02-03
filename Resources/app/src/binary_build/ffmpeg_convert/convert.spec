@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['convert.py'],
-             pathex=['/Users/bernardahn/Documents/GitHub/squwbs_pro/binary_build/ffmpeg_convert'],
+             pathex=['/Users/bernardahn/Downloads/squwbs_pro-master/Resources/app/src/binary_build/ffmpeg_convert'],
              binaries=[],
              datas=[],
              hiddenimports=[],
