@@ -13,19 +13,7 @@ const isDev=false
 function createWindow () {
   var portfinder = require('portfinder')
   
-  function findPort(){
-      portfinder.getPort(function(err,port){
-          console.log("express server started in localhost:"+port)
-          var originalJson=JSON.parse(fs.readFileSync("./src/assets/sharedInfo.json"))
-          originalJson.portnumber=port
-          console.log(originalJson)
-          fs.writeFile("./src/sharedInfo.json",JSON.stringify(originalJson),function(){
-            require("./src/expressServer/server").expressServer(port)
-            win.loadURL("http://localhost:"+port)
-          })
-      })  
-  }
-  findPort()
+  
   // Create the browser window.
   let win = new BrowserWindow({
     //width: 1024,
@@ -44,6 +32,27 @@ function createWindow () {
     appIcon:__dirname + '/squwbs.icns',
     
   })
+  function findPort(){
+    portfinder.getPort(function(err,port){
+        console.log(path.join(__dirname,'./src/assets/sharedInfo.json'))
+        // path.join(__dirname,'./src/assets/sharedInfo.json')
+        console.log("express server started in localhost:"+port)
+
+        // var originalJson=JSON.parse(fs.readFileSync("./src/assets/sharedInfo.json"))
+        var originalJson=JSON.parse(fs.readFileSync(path.join(__dirname,'./src/assets/sharedInfo.json')))
+        originalJson.portnumber=port
+        console.log(originalJson)
+        // fs.writeFile("./src/sharedInfo.json",JSON.stringify(originalJson),function(){
+        //   require("./src/expressServer/server").expressServer(port)
+        //   win.loadURL("http://localhost:"+port)
+        // })
+        fs.writeFile(path.join(__dirname,'./src/assets/sharedInfo.json'),JSON.stringify(originalJson),function(){
+          require(path.join(__dirname,"./src/expressServer/server")).expressServer(port)
+          win.loadURL("http://localhost:"+port)
+        })
+    })  
+}
+findPort()
   // win.loadURL(
   //   isDev 
   //   ? "http://localhost:3000" 
