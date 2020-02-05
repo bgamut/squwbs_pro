@@ -1,7 +1,7 @@
 const { app, BrowserWindow,Tray } = require('electron')
 const path = require('path')
 const fs=require('fs')
-// const isDev= require('electron-is-dev')
+//const isDev= require('electron-is-dev')
 const isDev=false
 // const child_process=require("child_process")
 // // require('electron-reload').apply(__dirname,{

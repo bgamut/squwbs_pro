@@ -7,6 +7,7 @@ var flash = require('connect-flash')
 var net = require('net')
 var fs=require('fs')
 var isWav=require('is-wav')
+var child_process=require('child_process')
 const binding = require('../binary_build/spline/build/Release/addon');
 
 console.log(require('path').join(require('os').homedir(), 'Desktop'))
@@ -52,6 +53,8 @@ app.get('/',cors(), function (req, res) {
 app.get('/handshake',cors(),function(req,res){
   var obj={message:'hand shook',number:req.query.number}
   console.log(JSON.stringify(obj))
+  //var child=child_process.execSync('node ./tests/image_iteration.js')
+  //console.log(child)
   res.send(obj)
 })
 app.get('/reset-port-number',cors(),function(req,res){

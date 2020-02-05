@@ -6,7 +6,7 @@
   "main": "main.js",
   "scripts": {
     "installbeforestart": "npm install concurrently electron electron-builder wait-on cross-env",
-    "start-dev": "concurrently \"cross-env BROWSER=none yarn react-start\" \"wait-on http://localhost:3000 && electron .\"",
+    "start-dev": "concurrently \"cross-env yarn react-start\" \"wait-on http://localhost:8000\"",
     "start": "electron .",
     "buildpython": "pyinstaller --onefile squwbs_pro.py && mv ./dist/squwbs_pro ../../MacOS/squwbs_pro && rmdir ./dist",
     "pythonbuild": "pyinstaller --onefile squwbs_pro.py && mv ./dist/squwbs_pro ../../MacOS/squwbs_pro && rmdir ./dist",
@@ -59,6 +59,7 @@
     "is-wav": "^1.1.2",
     "lodash": "^4.17.15",
     "matplotlib": "^1.0.0",
+    "ml5": "^0.4.3",
     "mobile-detect": "^1.4.4",
     "module-alias": "^2.2.2",
     "mp3-to-wav": "^0.1.11",
