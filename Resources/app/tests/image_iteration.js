@@ -90,7 +90,7 @@ fs.readdir(rootDir,function(err,files){
             for (var labelIndex=0; labelIndex<todo.length; labelIndex++){
                 
                 for(var fileIndex=0; fileIndex<todo[labelIndex]['subset']['raw'].length; fileIndex++){
-                    var arbitraryLength=2048*512
+                    var arbitraryLength=2048*2048
                     var originalLength=todo[labelIndex]['subset']['raw'][fileIndex]['array'].length
                     var stride = originalLength/arbitraryLength
                     var tempArray=[]
@@ -103,15 +103,10 @@ fs.readdir(rootDir,function(err,files){
                     var spectrogram = buildSpectrogram.AcceptArrayBuffer(int32array.buffer,todo[labelIndex]['subset']['raw'][fileIndex]['sampleRate']);
                     todo[labelIndex]['subset']['raw'][fileIndex]['spectrogram']=spectrogram
                     //delete(todo[labelIndex]['files'])
-                    //console.log(todo[labelIndex]['subset']['raw'][fileIndex])
+                    console.log(todo[labelIndex]['subset']['raw'][fileIndex])
                 }
             }
-            for(var i = 0; i<todo[0]['subset']['raw'][0]['spectrogram'].length; i++){
-                if(todo[0]['subset']['raw'][0]['spectrogram'][i]!=0){
-                    console.log(todo[0]['subset']['raw'][0]['spectrogram'][i])
-                }
-                
-            }
+            
             
             
             
