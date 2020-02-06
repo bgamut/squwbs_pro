@@ -31,7 +31,7 @@ fs.readdir(rootDir,function(err,directories){
                     // console.log('trimming...')
                     var start=process.hrtime();
                     for (var i=0; i<originalLength; i++){
-                        if (result.channelData[0][i]!==0.0){
+                        if (Math.abs(result.channelData[0][i])>0.0025){
                             frontSilenceTrim=true
                         }
                         if(frontSilenceTrim==true){
@@ -41,7 +41,7 @@ fs.readdir(rootDir,function(err,directories){
                     originalLength=newArray.length
                     for (var i=originalLength-1; i>=0; i-=1){
                         if(endSilenceTrim==false){
-                            if (result.channelData[0][i]==0.0){
+                            if (Math.abs(result.channelData[0][i])<0.0025){
                                 newArray.splice(-1,1)
                             }
                             else{
