@@ -2,9 +2,10 @@ var PNGImage = require('pngjs-image')
 var path = require('path')
 var fs = require('fs')
 var wav = require('node-wav');
-var fft = require('fft-js').fft
-var ifft= require('fft-js').ifft
-var fftUtil = require('fft-js').util
+// var fft = require('fft-js').fft
+// var ifft= require('fft-js').ifft
+// var fftUtil = require('fft-js').util
+const fft = require('../src/binary_build/fft/build/Release/addon').AcceptArrayBuffer;
 var rootDir='/Users/bernardahn/Desktop/tf_data_prep'
 
 var todo=[]
@@ -27,7 +28,7 @@ fs.readdir(rootDir,function(err,directories){
                     var newArray=[]
                     var frontSilenceTrim=false
                     var endSilenceTrim=false
-                    console.log('trimming...')
+                    // console.log('trimming...')
                     var start=process.hrtime();
                     for (var i=0; i<originalLength; i++){
                         if (result.channelData[0][i]!==0.0){
@@ -49,15 +50,17 @@ fs.readdir(rootDir,function(err,directories){
                             }
                         }
                     }
-                    var end = process.hrtime(start)
-                    console.log('took %ds %dms',end[0],end[1])
+                    // var end = process.hrtime(start)
+                    // console.log('took %d.%ds',end[0],end[1])
                     var width=2048
                     var bins=2048
                     var height=bins/2
                     var arbitraryLength=width*height
                     // if(originalLength>width){
-                    console.log('Making Spectrogram Array...')
-                    start=process.hrtime()
+
+                    //the following code is 6times faster than fftjs by implementing it in c++
+                    // console.log('Making Spectrogram Array...')
+                    // start=process.hrtime()
                     var stride = (originalLength-bins)/width
                     var spectrogram=[]
                     for (var i =0; i<width; i++){
@@ -65,17 +68,20 @@ fs.readdir(rootDir,function(err,directories){
                         for(var j=0; j<bins; j++){
                             tempArray[j]=(newArray[Math.floor(i*stride)+j])
                         }
-                        var phasors=fft(tempArray)
-                        spectrogram.push(fftUtil.fftMag(phasors))
+                        // var phasors=fft(tempArray)
+                        // spectrogram.push(fftUtil.fftMag(phasors))
+                        const float32arrayLeft = new Float32Array(tempArray);
+                        var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
+                        spectrogram.push(fft(int32arrayLeft.buffer,sampleRate));
                     }
-                    end = process.hrtime(start)
-                    console.log('took %ds %dms',end[0],end[1])
+                    var end = process.hrtime(start)
+                    console.log('took %d.%ds',end[0],end[1])
                     // var float32array=new Float32Array(tempArray.slice())
                     // var int32array = new Int32Array(float32array.buffer);
                     // var buildSpectrogram = require('../src/binary_build/spline/build/Release/addon');
                     // var spectrogram = buildSpectrogram.AcceptArrayBuffer(int32array.buffer,sampleRate);
                     var image=PNGImage.createImage(width,height);
-                    image.fillRect(0,0,width,height,{red:255,green:255,blue:255,alpha:200})
+                    image.fillRect(0,0,width,height,{red:255,green:255,blue:255,alpha:255})
                     for (var j=0; j<height; j++){
                         for(var i=0; i<width; i++){
                             var gray=Math.floor(255*spectrogram[i][j])
@@ -86,7 +92,7 @@ fs.readdir(rootDir,function(err,directories){
                             //image.setAt(i-1,Math.floor((tempArray[i]+1)*height/2),{red:0,green:0,blue:0,alpha:200})
                             //image.setAt(i+1,Math.floor((tempArray[i]+1)*height/2),{red:0,green:0,blue:0,alpha:200})
                             //image.fillRect(i,j,3,3,{red:0,green:0,blue:0,alpha:200})
-                            image.setAt(i,height-j,{red:gray,green:gray,blue:gray,alpha:200})
+                            image.setAt(i,height-j,{red:gray,green:gray,blue:gray,alpha:255})
                         }
 
                     }

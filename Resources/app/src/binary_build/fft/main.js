@@ -1,4 +1,4 @@
-const binding = require('./build/Release/addon');
+const fft = require('./build/Release/addon').AcceptArrayBuffer;
 var fs = require('fs');
 var wav = require('node-wav');
 
@@ -21,7 +21,7 @@ if(result.channelData[1]==undefined){
         float32arrayLeft[i]=result.channelData[0][i];
     }
     var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
-    var arrayLeft = binding.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+    var arrayLeft = fft(int32arrayLeft.buffer,sampleRate);
     var arrayRight = arrayLeft.slice();
 }
 else{
@@ -33,7 +33,7 @@ else{
     }
     var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
     var int32arrayRight = new Int32Array(float32arrayRight.buffer);
-    var arrayLeft = binding.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+    var arrayLeft = fft(int32arrayLeft.buffer,sampleRate);
     // var canvas = createCanvas(2048,1024);
     // background(0,0,255);
     // saveCanvas(canvas,'saved_image','png')
