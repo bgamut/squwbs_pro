@@ -210,3 +210,6 @@ await model.fit(xs, ys, {
           console.log(classNames[index])
       }
   }
+  var modelPath=path.join(inputDir,'saved_model.json')
+  await model.save(modelPath)
+  console.log('model saved')
