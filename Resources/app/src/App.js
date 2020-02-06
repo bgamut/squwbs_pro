@@ -2,7 +2,7 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import DirectoryOpen from './components/DirectoryOpen'
-
+// import prepData from './components/prepData'
 
 function App() {
   

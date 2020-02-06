@@ -69,13 +69,24 @@ app.get('/reset-port-number',cors(),function(req,res){
 app.get('/file-path-list',cors(),function(req,res){
   var fileList=[]
   filesListLength=Object.keys(req.query.files).length
+  // for (var i =0; i<filesListLength; i++){
+  //   if(path.extname(req.query.files[i])=='.wav'){
+  //     console.log(isWav(fs.readFileSync(req.query.files[i]))+req.query.files[i])
+  //     // console.log(req.query.files[i])
+  //     fileList.push(req.query.files[i])
+  //   } 
+  // }
   for (var i =0; i<filesListLength; i++){
-    if(path.extname(req.query.files[i])=='.wav'){
-      console.log(isWav(fs.readFileSync(req.query.files[i]))+req.query.files[i])
+    if(path.extname(req.query.files[i])=='.png'){
+      //console.log(isWav(fs.readFileSync(req.query.files[i]))+req.query.files[i])
       // console.log(req.query.files[i])
-      fileList.push(req.query.files[i])
+      fileList.push({path:req.query.files[i],class:path.basename(path.resolve(req.query.files[i],'..'))})
     } 
   }
+  var json={data:fileList}
+  fs.writeFile(path.join(__dirname,"../assets/fileList.json"),JSON.stringify(json),function(){
+    console.log('fileList written')
+  })
   console.log(fileList)
   res.send({data:fileList})
 })
