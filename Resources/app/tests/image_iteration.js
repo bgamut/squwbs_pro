@@ -20,7 +20,8 @@ fs.readdir(rootDir,function(err,directories){
             for (var fileIndex=0; fileIndex<files.length; fileIndex++){
                 var extIndex=files[fileIndex].split('.').length-1
                 if(files[fileIndex].split('.')[extIndex]=='wav'){
-                    console.log(path.join(currentDir,files[fileIndex]))
+                    //console.log(path.join(currentDir,files[fileIndex]))
+                    console.log(path.basename(currentDir))
                     var buffer = fs.readFileSync(path.join(currentDir,files[fileIndex]))
                     var result = wav.decode(buffer);
                     var originalLength=result.channelData[0].length;
