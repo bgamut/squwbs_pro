@@ -227,29 +227,56 @@ app.get('/one-file',cors(),function(req,res){
   var userDetails;
   const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
   var fullPathDirectory=path.join(desktopPath,'mastered_files')
-  if(fs.existsSync(fullPathDirectory)==false){
-    fs.mkdirSync(fullPathDirectory) 
-  }
-  //var tempAudioDir=path.join(fullPathDirectory,'.temp_audio')
   var tempAudioDir=path.join(fullPathDirectory,'temp_audio')
-  if(fs.existsSync(tempAudioDir)==false){
-    fs.mkdirSync(tempAudioDir) 
-  }
-  //var wavDirectory=path.join(fullPathDirectory,'.wav')
   var wavDirectory=path.join(fullPathDirectory,'wav')
-  if(fs.existsSync(wavDirectory)==false){
-    fs.mkdirSync(wavDirectory) 
-  }
-  //var errorPathDirectory=path.join(fullPathDirectory,'.error_files')
   var errorPathDirectory=path.join(fullPathDirectory,'error_files')
-  if(fs.existsSync(errorPathDirectory)==false){
-    fs.mkdirSync(errorPathDirectory) 
-  }
-  //var nextFullPathDirectory=path.join(fullPathDirectory,'.mastered_fixed')
   var nextFullPathDirectory=path.join(fullPathDirectory,'mastered_fixed')
-  if(fs.existsSync(nextFullPathDirectory)==false){
-    fs.mkdirSync(nextFullPathDirectory) 
+  //var tempAudioDir=path.join(fullPathDirectory,'.temp_audio')
+  //var wavDirectory=path.join(fullPathDirectory,'.wav')
+  //var errorPathDirectory=path.join(fullPathDirectory,'.error_files')
+  //var nextFullPathDirectory=path.join(fullPathDirectory,'.mastered_fixed')
+  if(fs.existsSync(fullPathDirectory)==false){
+    fs.mkdir(fullPathDirectory,function(){
+      if(fs.existsSync(tempAudioDir)==false){
+        fs.mkdirSync(tempAudioDir) 
+      }
+      if(fs.existsSync(wavDirectory)==false){
+        fs.mkdirSync(wavDirectory) 
+      }
+      if(fs.existsSync(errorPathDirectory)==false){
+        fs.mkdirSync(errorPathDirectory) 
+      }
+      if(fs.existsSync(nextFullPathDirectory)==false){
+        fs.mkdirSync(nextFullPathDirectory) 
+      }
+    }) 
   }
+  else{
+    if(fs.existsSync(tempAudioDir)==false){
+      fs.mkdirSync(tempAudioDir) 
+    }
+    if(fs.existsSync(wavDirectory)==false){
+      fs.mkdirSync(wavDirectory) 
+    }
+    if(fs.existsSync(errorPathDirectory)==false){
+      fs.mkdirSync(errorPathDirectory) 
+    }
+    if(fs.existsSync(nextFullPathDirectory)==false){
+      fs.mkdirSync(nextFullPathDirectory) 
+    }
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   function writePNG(file){
     //console.log(file)
     var extIndex=file.split('.').length-1
@@ -270,13 +297,17 @@ app.get('/one-file',cors(),function(req,res){
           var newFileName=fileNameOnly+'.'+desiredExt
           //var newOutputFilePath=path.join(tempAudioDir,newFileName)
           var newOutputFilePath=path.join(targetDir,newFileName)
+          console.log(newOutputFilePath)
           var baseCommand=path.join(__dirname,'../binary_build/ffmpeg_convert/dist/convert')
           var command=baseCommand+' inputFilePath="'+filePath+'" outputFilePath="'+newOutputFilePath+'" errorDir="'+errorPathDirectory+'"'
           child_process.exec(command,function(err,stdout,stderr){
+            console.log(stdout)
             if(err!==null){  
               console.log(err)
             }
-            cb()
+            if(typeof(cb)!=='undefined'){
+              cb()
+            }
           }) 
         }
         function warmWav(wavPath, newFilePath){
@@ -310,8 +341,13 @@ app.get('/one-file',cors(),function(req,res){
           var float32arrayRight=new Float32Array(arrayRight)
           var combinedChannel=[float32arrayLeft,float32arrayRight]
           var newWav=wav.encode(combinedChannel,{sampleRate:sampleRate,float:true,})
+          function callbackTwo(){
+            fs.unlink(path.join(tempAudioDir,fileName),function(){
+              fs.unlinkSync(path.join(wavDirectory,fileName))
+            })
+          }
           fs.writeFile(newFilePath,newWav,function(){
-            changeSoundExt(newFilePath,fullPathDirectory,'mp3')
+            changeSoundExt(newFilePath,fullPathDirectory,'mp3',callbackTwo)
           })
         }
 
@@ -364,8 +400,18 @@ app.get('/one-file',cors(),function(req,res){
         var createdImagePath=path.join(__dirname,'../assets/images/'+fileName+'.png')
         image.writeImage(createdImagePath, function (error) {
           //console.log('server Image creation : '+error)
+          function callbackOne(){
+            warmWav(path.join(tempAudioDir,fileName),path.join(wavDirectory,fileName))
+          }
+          changeSoundExt(filePath,tempAudioDir,'wav',function(){
+            console.log(fileName)
+            callbackOne()
+          })
           function check(filePath,i,endIndex,timeout){
             PNGImage.readImage(filePath, function (err, image) {
+              // changeSoundExt(filePath,tempAudioDir,'wav',function(){
+              //   console.log(fileName)
+              // })
               if(typeof(err)==='undefined'){
                 // return(true)
                 var obj={file:filePath,message:'success'}
@@ -373,25 +419,28 @@ app.get('/one-file',cors(),function(req,res){
                 res.send({data:obj})
               }
               else{
-                if(i<endIndex){
-                  setTimeout(function(){check(filePath,i+1,endIndex,timeout)},timeout)
-                }
-                else{
-                  //return false;
+                // if(i<endIndex){
+                //   setTimeout(function(){check(filePath,i+1,endIndex,timeout)},timeout)
+                // }
+                // else{
+                //   //return false;
                   var obj={file:filePath,message:'questionable'}
                   console.log(obj)
                   res.send({data:obj})
-                }
+                // }
               }
-              function callbackOne(){
-                warmWav(path.join(tempAudioDir,fileName),path.join(wavDirectory,fileName))
-              }
-              changeSoundExt(filePath,tempAudioDir,'wav',callbackOne)
+              
+              
             });
           }
           check(createdImagePath,0,10,800)
         })
 
+      }
+    else{
+      var obj={file:filePath,message:'not wav'}
+        console.log(obj)
+        res.send({data:obj})
       }
     }
   

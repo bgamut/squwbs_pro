@@ -61,7 +61,8 @@ export default function DirectorOpen(props){
                 //return(stringedJson)
             })
             .catch((err)=>{
-                console.error(err)
+                //console.error(err)
+                console.log()
                 //return(null)
             })
  
@@ -91,13 +92,14 @@ export default function DirectorOpen(props){
                 //return stringifyObject(result.json())
             })
             .then((json)=>{
-                console.log(stringifyObject(json))
-                console.log('do something here')
+                //console.log(stringifyObject(json))
+                //console.log('do something here')
                 var stringedJson = stringifyObject(json)
                 //return(stringedJson)
             })
             .catch((err)=>{
                 console.error(err)
+                //todo: put file to error list.
                 //return(null)
             })
             // try{
