@@ -38,38 +38,86 @@ export default function DirectorOpen(props){
         getPortnumberFromJSON()
         
     }
-    
+    const postApi=(endPoint,obj,cb)=>{
+        if(portnumber!=null){
+
+            fetch('http://127.0.0.1:'+portnumber+'/'+endPoint, {
+                method:"POST",
+                headers:{
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body:JSON.stringify(obj),
+                mode:'cors',
+            })
+            .then(result=>{
+                return result.json()
+                //return stringifyObject(result.json())
+            })
+            .then((json)=>{
+                console.log(stringifyObject(json))
+                console.log('do something here')
+                var stringedJson = stringifyObject(json)
+                //return(stringedJson)
+            })
+            .catch((err)=>{
+                console.error(err)
+                //return(null)
+            })
+ 
+        }
+        else{
+            if(cb!=undefined){
+                setTimeout(cb())
+            }
+        } 
+    }
     const restApi=async(endPoint,queries,cb)=>{
         var json = require('../assets/sharedInfo.json')
         //console.log(json)
         
         if(portnumber!=null){
-            console.log('http://127.0.0.1:'+portnumber+'/'+endPoint)
-            console.log({
-                ...queries,
-                mode:'cors',
-            })
+            // console.log('http://127.0.0.1:'+portnumber+'/'+endPoint)
+            // console.log({
+            //     ...queries,
+            //     mode:'cors',
+            // })
             fetch(withQuery('http://127.0.0.1:'+portnumber+'/'+endPoint, {
                 ...queries,
                 mode:'cors',
             }))
             .then(result=>{
                 return result.json()
+                //return stringifyObject(result.json())
             })
             .then((json)=>{
                 console.log(stringifyObject(json))
-                return(stringifyObject(json))
+                console.log('do something here')
+                var stringedJson = stringifyObject(json)
+                //return(stringedJson)
             })
             .catch((err)=>{
                 console.error(err)
-                return(null)
+                //return(null)
             })
+            // try{
+            //     var result = await(withQuery('http://127.0.0.1:'+portnumber+'/'+endPoint, 
+            //                 {
+            //                     ...queries,
+            //                     mode:'cors',
+            //                 }))
+            //     var json = await result.json()
+            //     var stringedJSON = stringifyObject(json)
+            //     return(stringedJSON)
+            // }
+            // catch{
+            //     return(null)
+            // }
         }
         else{
             if(cb!=undefined){
-                setTimeout(cb(),3000)
+                setTimeout(cb())
             }
-            
         }
     }  
     function readTextFile(file, callback) {
@@ -135,7 +183,23 @@ export default function DirectorOpen(props){
             }
             var fileIndex=0
             obj.files=filePaths
-            restApi('file-path-list',obj)
+            //  restApi('file-path-list',obj)
+            var i = 0
+            function callback(){
+                
+            }
+            //postApi("all-files",{data:filePaths})
+            async function start(){
+                for(var i =0; i<filePaths.length; i++){
+                    var obj={file:filePaths[i]}
+                    //console.log(obj)
+                    var json= await restApi("one-file",obj)
+                    //console.log(json)
+                }
+            }
+            start()
+            
+           
         }
     },[])
     useEffect(()=>{

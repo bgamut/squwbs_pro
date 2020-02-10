@@ -16,8 +16,9 @@ var inputDir='/Users/bernardahn/Desktop/tf_data_prep'
 console.log('ml5 version:', ml5.version);
 var rootDir='/Users/bernardahn/Desktop/tf_data_prep'
         console.log('ml5 version:', ml5.version);
-        const classifier = ml5.featureExtractor('MobileNet',modelLoaded)
-        classifier.classification()
+        var knnClassifier = ml5.knnClassifier();
+        var featureExtractor = ml5.featureExtractor('MobileNet',modelLoaded)
+        
         function loadImage(){
             var todo=[]
             var classNames=[]
@@ -25,21 +26,13 @@ var rootDir='/Users/bernardahn/Desktop/tf_data_prep'
             fs.readdir(rootDir,function(err,directories){
                 for (var index =0; index<directories.length; index++){
                     var currentDir=path.join(rootDir,directories[index])
-                    if(fs.lstatSync(currentDir).isDirectory()){
-                        var files=fs.readdirSync(currentDir)
-                        for (var fileIndex=0; fileIndex<files.length; fileIndex++){
-                            var extIndex=files[fileIndex].split('.').length-1
-                            if(files[fileIndex].split('.')[extIndex]=='png'){
-                                //var mainImage=p5.createImg(path.join(currentDir,files[fileIndex]),imageReady)
-                                var mainImage=fs.readFileSync(path.join(currentDir,files[fileIndex]))
-                                imageReady()
-                                mainImage.hide()
-                                function imageReady(){
-                                    var className=path.basename(currentDir)
-                                    classifier.addImage(mainImage,className)
-                                }
-                            }
+                        imageReady()
+                        mainImage.hide()
+                        function imageReady(){
+                            var className=path.basename(currentDir)
+                            classifier.addImage(mainImage,className)
                         }
+                            
                         classifier.train(whileTraining)
                         function whileTraining(loss)
                         {
@@ -49,7 +42,7 @@ var rootDir='/Users/bernardahn/Desktop/tf_data_prep'
                                 classifier.save()
                             }
                         }
-                    }
+                    
                 }  
             })
         }
