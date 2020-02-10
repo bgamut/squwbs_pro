@@ -4,8 +4,10 @@ function setup() {
   // put setup code here
   console.log('hello world')
   console.log('ml5 version:', ml5.version);
-  const classifier = ml5.featureExtractor('MobileNet',modelLoaded)
-  classifier.classification()
+ // const classifier = ml5.featureExtractor('MobileNet',modelLoaded)
+ // classifier.classification()
+  const knnClassifier = ml5.KNNClassifier();
+  const featureExtractor=ml5.featureExtractor('MobileNet',modelReady)
   createCanvas(150, 150);
   background(200);
   var mainImage
@@ -13,15 +15,15 @@ function setup() {
   var indexMax=0;
   //var mainFileName
   function iterate(iteration){
-    try{
+    // try{
       mainImage=createImg(jsonData.data[iteration].path,imageReady)
       mainImage.hide()
-    }
-    catch{
-      iteration+=1
-      indexMax+=1
-      iterate(iteration)
-    }
+    // }
+    // catch{
+    //   iteration+=1
+    //   indexMax+=1
+    //   iterate(iteration)
+    // }
     
   }
   
@@ -35,43 +37,50 @@ function setup() {
     // classifier.train(function(){
     //   console.log('training')
     // })
-    if(err){
-      console.log('error!!!!!!!!', err)
+    // if(err){
+      // console.log('error!!!!!!!!', err)
       iteration+=1
-      iterate(iteration)
       indexMax++;
       //console.log(indexMax);
-      if(indexMax==Object.keys(jsonData.data).length){
-        classifier.train(whileTraining)
-          function whileTraining(loss)
-          {
-              console.log('training loss : '+loss)
-              if(loss==null){
-                  console.log('training done')
-                  classifier.save()
-              }
-          }
+      if(indexMax==50){
+        // function whileTraining(loss)
+        // {
+            // console.log('training loss : '+loss)
+            // if(loss==null){
+            //     console.log('training done')
+            //     classifier.save()
+            // }
+        // }
+        // classifier.train(whileTraining)
+        knnClassifier.save('classifier.json')
       }
-    }
-    else{
-      var mainClassName=jsonData.data[iteration].class
-      classifier.addImage(mainImage,mainClassName)
-      iteration+=1
-      iterate(iteration)
-      indexMax++;
-      //console.log(indexMax);
-      if(indexMax==Object.keys(jsonData.data).length){
-        classifier.train(whileTraining)
-          function whileTraining(loss)
-          {
-              console.log('training loss : '+loss)
-              if(loss==null){
-                  console.log('training done')
-                  classifier.save()
-              }
-          }
+      else{
+        iterate(iteration)
       }
-    }
+    // }
+    // else{
+    //   var mainClassName=jsonData.data[iteration].class
+    //   classifier.addImage(mainImage,mainClassName)
+    //   iteration+=1
+    //   indexMax++;
+    //   //console.log(indexMax);
+    //   if(indexMax==50){
+    //     function whileTraining(loss)
+    //     {
+    //         console.log('training loss : '+loss)
+    //         if(loss==null){
+    //             console.log('training done')
+    //             classifier.save()
+    //         }
+    //     }
+    //     classifier.train(whileTraining)
+    //   }
+    //   else{
+    //     iterate(iteration)
+    //   }
+      
+      
+    // }
     
     
   }
@@ -92,7 +101,7 @@ function setup() {
    
   }
   
-  function modelLoaded(){
+  function modelReady(){
     console.log('model ready')
     loadImage()
   }
