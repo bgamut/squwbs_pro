@@ -18,7 +18,7 @@ function App(props) {
   const [handshakeStatus,setHandshakeStatus]=useState(false)
   const [updates,setUpdates]=useState(null)
   const [currentIndex,setCurrentIndex]=useState(0)
-  const [stop,setStop]=useState(false)
+  // const [stop,setStop]=useState(false)
   var progressBarStyleOne={
     //flex:1,
     height:33,
@@ -79,6 +79,9 @@ function App(props) {
   var barWidth=150
   function setPercent(endIndex){
     // if(go==true){
+      // if(currentIndex==0){
+      //   setStop(true)
+      // }
       if(currentIndex+1<endIndex){
         //currentIndex=currentIndex+1
         setCurrentIndex(currentIndex+1)
@@ -87,25 +90,25 @@ function App(props) {
         //currentIndex=endIndex
         setCurrentIndex(endIndex)
       }
-      console.log(currentIndex)
-      console.log(endIndex)
+      //console.log(currentIndex)
+      //console.log(endIndex)
       percentage = Math.floor(currentIndex/endIndex*10000)/100
       barWidth=Math.floor(150*currentIndex/endIndex)
       if (percentage!=0){
         percentageText.current.innerHTML=percentage+' %'
         if(currentIndex==endIndex-1){
           percentageText.current.innerHTML="Ready"
-          setStop(false)
+          //setStop(false)
         }
       }
       else{
         percentageText.current.innerHTML="Ready"
-        setStop(false)
+        // setStop(false)
       }
       bar.current.style.width=barWidth+'px'
-      console.log(bar.current.style.width)
+      //console.log(bar.current.style.width)
     // }
-    setStop(true)
+    
   }
   const resetPortSettings=async()=>{
     function getPortnumberFromJSON(){
@@ -193,6 +196,8 @@ function App(props) {
       //getPort()
       
       document.getElementById('business').onchange = function(e){ 
+      //document.getElementById('business').oninput = function(e){
+          setCurrentIndex(0)
           var files = e.target.files; 
           var filePaths =[];
           var obj={}
@@ -243,9 +248,17 @@ function App(props) {
   },[updates])
   useEffect(()=>{
     // setStop(false)
+
   },[currentIndex])
+  // useEffect(()=>{
+  //   // setStop(false)
+  //   console.log(stop)
+  // },[stop]) 
   const pushed=()=>{
-    document.getElementById('business').click()
+    // if(stop==false){
+      
+      document.getElementById('business').click()
+    // }
   }
   return (
     <div className="App">
@@ -262,9 +275,9 @@ function App(props) {
               }}
             >
               <TouchableOpacity onPress={(e)=>{ 
-                if(stop==false){
+                // if(stop==false){
                   pushed()
-                }
+                // }
               }}>
                 <Text selectable={false} style={textStyle}><a ref={percentageText} style={innerTextStyle}>Ready</a></Text>
               </TouchableOpacity>
