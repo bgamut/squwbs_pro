@@ -224,6 +224,9 @@ app.post('/all-files',cors(),function(req,res){
 app.get('/one-file',cors(),function(req,res){
 
   var filePath=req.query.file
+  var fraction=req.query.fraction
+  var currentGame=req.query.currentGame
+  var endGame=req.query.endGame
   var userDetails;
   const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
   var fullPathDirectory=path.join(desktopPath,'mastered_files')
@@ -414,7 +417,7 @@ app.get('/one-file',cors(),function(req,res){
               // })
               if(typeof(err)==='undefined'){
                 // return(true)
-                var obj={file:filePath,message:'success'}
+                var obj={file:filePath,message:'success',fraction:fraction,currentGame:currentGame,endGame:endGame}
                 console.log(obj)
                 res.send({data:obj})
               }
@@ -424,7 +427,7 @@ app.get('/one-file',cors(),function(req,res){
                 // }
                 // else{
                 //   //return false;
-                  var obj={file:filePath,message:'questionable'}
+                  var obj={file:filePath,message:'questionable',fraction:fraction,currentGame:currentGame,endGame:endGame}
                   console.log(obj)
                   res.send({data:obj})
                 // }
@@ -438,7 +441,7 @@ app.get('/one-file',cors(),function(req,res){
 
       }
     else{
-      var obj={file:filePath,message:'not wav'}
+      var obj={file:filePath,message:'not wav',fraction:fraction,currentGame:currentGame,endGame:endGame}
         console.log(obj)
         res.send({data:obj})
       }

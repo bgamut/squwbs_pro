@@ -18,6 +18,11 @@ const withQuery = require('with-query').default;
 export default function DirectorOpen(props){
     const [portnumber,setPortnumber]=useState(8000)
     const [handshakeStatus,setHandshakeStatus]=useState(false)
+    const [updates,setUpdates]=useState(null)
+    // const [currentIndex,setCurrentIndex]=useState(0)
+    // const [endIndex,setEndIndex]=useState(Infinity)
+    var currentIndex=0
+    var endIndex=Infinity
     // var handshakeStatus=false
     const resetPortSettings=async()=>{
         function getPortnumberFromJSON(){
@@ -92,9 +97,11 @@ export default function DirectorOpen(props){
                 //return stringifyObject(result.json())
             })
             .then((json)=>{
-                //console.log(stringifyObject(json))
+                //var update= stringifyObject(json)
+                setUpdates(json)
+                //console.log(update)
                 //console.log('do something here')
-                var stringedJson = stringifyObject(json)
+                //var stringedJson = stringifyObject(json)
                 //return(stringedJson)
             })
             .catch((err)=>{
@@ -192,8 +199,9 @@ export default function DirectorOpen(props){
             }
             //postApi("all-files",{data:filePaths})
             async function start(){
-                for(var i =0; i<filePaths.length; i++){
-                    var obj={file:filePaths[i]}
+                var endGame=filePaths.length
+                for(var i =0; i<endGame; i++){
+                    var obj={file:filePaths[i],fraction:i/filePaths.length,currentGame:i,endGame:endGame}
                     //console.log(obj)
                     var json= await restApi("one-file",obj)
                     //console.log(json)
@@ -215,7 +223,34 @@ export default function DirectorOpen(props){
         console.log('portnumber status changed!')
         console.log(portnumber)
     },[portnumber])
-    
+    useEffect(()=>{
+        if(updates!=null && typeof(updates)!=='undefined'){
+        //console.log(updates.data)
+            //props.percent(updates.data.fraction,updates.data.currentIndex,updates.data.endIndex)
+            //setEndIndex(updates.data.endIndex)
+            endIndex=parseInt(updates.data.endGame)
+            props.percent(endIndex)
+            
+        }
+    },[updates])
+    // useEffect(()=>{
+    //     if(endIndex>currentIndex+1){
+    //         //setCurrentIndex(currentIndex+1)
+    //         console.log(currentIndex)
+    //         currentIndex=currentIndex+1
+    //         props.percent(currentIndex,endIndex)
+    //     }
+    //     else{
+    //         // setCurrentIndex(0)
+    //         // setEndIndex(Infinity)
+    //         currentIndex=0
+    //         endIndex=Infinity
+    //         props.percent(currentIndex,endIndex)
+    //     }
+    // })
+    // useEffect(()=>{
+    //     props.percent(currentIndex,endIndex)
+    // },[currentIndex])
     const download = (downloadList) =>{
         var element = document.createElement('a');
         element.setAttribute('href', 'https://squwbs-252702.appspot.com/download');
