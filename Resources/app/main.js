@@ -23,7 +23,7 @@ function createWindow () {
     webPreferences: {
       nodeIntegration: true
     },
-    maximizable:false,
+    maximizable:true,
     resizable:true,
     //resizable:false,
     // frame:false,
@@ -71,7 +71,10 @@ findPort()
   tray.on('click',()=>{
     if(win.isVisible() == false){
       win.show()
-    } 
+    }
+    else{
+      win.hide()
+    }
   })
   win.on('show',()=>{
    // tray.setHighlightMode('never')
