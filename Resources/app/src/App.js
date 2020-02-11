@@ -18,7 +18,7 @@ function App(props) {
   const [handshakeStatus,setHandshakeStatus]=useState(false)
   const [updates,setUpdates]=useState(null)
   const [currentIndex,setCurrentIndex]=useState(0)
-  const [go,setGo]=useState(true)
+  const [stop,setStop]=useState(false)
   var progressBarStyleOne={
     //flex:1,
     height:33,
@@ -68,7 +68,8 @@ function App(props) {
       alignItems:'center',
       justifyContent:'center',
       flexDirection:'row',
-      margin:5
+      margin:5,
+      transform: `translate(0px, -3px)` 
   }
   var innerTextStyle={
     overflow: 'hidden',
@@ -77,7 +78,7 @@ function App(props) {
   var percentage=0
   var barWidth=150
   function setPercent(endIndex){
-    if(go==true){
+    // if(go==true){
       if(currentIndex+1<endIndex){
         //currentIndex=currentIndex+1
         setCurrentIndex(currentIndex+1)
@@ -92,17 +93,19 @@ function App(props) {
       barWidth=Math.floor(150*currentIndex/endIndex)
       if (percentage!=0){
         percentageText.current.innerHTML=percentage+' %'
-        if(percentage==100){
+        if(currentIndex==endIndex-1){
           percentageText.current.innerHTML="Ready"
+          setStop(false)
         }
       }
       else{
         percentageText.current.innerHTML="Ready"
+        setStop(false)
       }
       bar.current.style.width=barWidth+'px'
       console.log(bar.current.style.width)
-    }
-    setGo(false)
+    // }
+    setStop(true)
   }
   const resetPortSettings=async()=>{
     function getPortnumberFromJSON(){
@@ -239,7 +242,7 @@ function App(props) {
       }
   },[updates])
   useEffect(()=>{
-    setGo(true)
+    // setStop(false)
   },[currentIndex])
   const pushed=()=>{
     document.getElementById('business').click()
@@ -259,7 +262,9 @@ function App(props) {
               }}
             >
               <TouchableOpacity onPress={(e)=>{ 
-                pushed()
+                if(stop==false){
+                  pushed()
+                }
               }}>
                 <Text selectable={false} style={textStyle}><a ref={percentageText} style={innerTextStyle}>Ready</a></Text>
               </TouchableOpacity>
