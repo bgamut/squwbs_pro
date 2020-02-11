@@ -77,10 +77,10 @@ findPort()
     }
   })
   win.on('show',()=>{
-   // tray.setHighlightMode('never')
+   tray.setHighlightMode('never')
   })
   win.on('hide',()=>{
-    //tray.setHighlightMode('never')
+    tray.setHighlightMode('never')
   })
   win.on('quit',()=>{
     tray.webContents.clearHistory()
