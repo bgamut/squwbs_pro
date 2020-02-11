@@ -1,6 +1,8 @@
 import React,{Component,useContext,useState,useEffect,useRef} from 'react';
 import {Text,View,Dimensions,TouchableOpacity} from 'react-native';
-import logo from './logo.svg';
+//import logo from './logo.svg';
+//import logo from './assets/512x512.png'
+import logo from './assets/squwbs.ico'
 import './App.css';
 import DirectoryOpen from './components/DirectoryOpen'
 import stringifyObject from 'stringify-object'
@@ -21,11 +23,14 @@ function App(props) {
   // const [stop,setStop]=useState(false)
   var progressBarStyleOne={
     //flex:1,
-    height:33,
-    width:150,
+    height:22,
+    //width:'calc(100% - px)',
+    width:'100%',
+    marginLeft:4,
+    marginRight:4,
     backgroundColor:'transparent',
     flexDirection:'column',
-    justifyContent:'center',
+    //justifyContent:'center',
     alignItems:'center',
     boxSizing:"border-box",
     // borderRadius:2,
@@ -35,15 +40,16 @@ function App(props) {
   };
   var progressBarStyleTwo={
     //flex:1,
-    height:33,
-    width:150,
-    backgroundColor:'rgb(186,214,227)',
+    height:22,
+    width:'100%',
+    backgroundColor:'rgb(234,179,65)',
     flex:1,
     flexDirection:'column',
     justifyContent:'center',
     alignItems:'center',
-    borderRadius:2,
-    borderColor:'rgb(186,214,227)',
+    borderRadius:11,
+    borderWidth:1,
+    borderColor:'rgb(81,81,81)',
     borderStyle:'solid',
     overflow:'hidden',
     boxSizing:"border-box",
@@ -57,24 +63,25 @@ function App(props) {
     elevation:2
   };
   var textStyle={
-      fontSize: 11,
+      fontSize: 10,
       fontWeight:'700',
       textDecorationLine:'none',
-      color:'white',
-      textShadowColor: 'rgba(0, 0, 0, 0.85)',
-      textShadowOffset: {width: 0, height: 0},
-      textShadowRadius: 2,
+      color:'rgb(90,90,90)',
+      // textShadowColor: 'rgba(0, 0, 0, 0.85)',
+      // textShadowOffset: {width: 0, height: 0},
+      // textShadowRadius: 2,
       textAlign:'center',
       alignItems:'center',
       justifyContent:'center',
       flexDirection:'row',
       margin:5,
-      transform: `translate(0px, -3px)` 
+      transform: `translate(0px, -1px)` 
   }
   var innerTextStyle={
     overflow: 'hidden',
     whiteSpace: 'nowrap'
   }
+
   var percentage=0
   var barWidth=150
   function setPercent(endIndex){
@@ -93,7 +100,7 @@ function App(props) {
       //console.log(currentIndex)
       //console.log(endIndex)
       percentage = Math.floor(currentIndex/endIndex*10000)/100
-      barWidth=Math.floor(150*currentIndex/endIndex)
+      barWidth=Math.floor(394*currentIndex/endIndex)
       if (percentage!=0){
         percentageText.current.innerHTML=percentage+' %'
         if(currentIndex==endIndex-1){
@@ -105,7 +112,8 @@ function App(props) {
         percentageText.current.innerHTML="Ready"
         // setStop(false)
       }
-      bar.current.style.width=barWidth+'px'
+      //bar.current.style.width=barWidth+'px'
+      bar.current.style.width=percentage+'%'
       //console.log(bar.current.style.width)
     // }
     
@@ -262,14 +270,16 @@ function App(props) {
   }
   return (
     <div className="App">
-      <header className="App-header">
+      <div className='out-most'>
+      <div className="outter">
+      <div className="App-header">
         
-          <img src={logo} className="App-logo" alt="logo" />
+        {/* <img src={logo} className="App-logo" alt="logo" /> */}
         <div className="progressBar" style={{...progressBarStyleOne}}>
           <div ref={bar} style={{...progressBarStyleTwo}}>
             <View
               style={{
-                height:33,
+                height:22,
                 justifyContent:'center',
                 alignItems:'center'
               }}
@@ -286,7 +296,9 @@ function App(props) {
         </div>
         <input id="business" type="file" multiple webkitdirectory='true' directory='true' style={{display: "none"}}/>
         {/* <DirectoryOpen percent={setPercent}/> */}
-      </header>
+      </div>
+      </div>
+      </div>
     </div>
   );
 }
