@@ -14,6 +14,7 @@ function App(props) {
 
   const bar = useRef(null)
   const percentageText = useRef(null)
+  const buttonRef = useRef(null)
   //var currentIndex=0
   var height=100
   const [portnumber,setPortnumber]=useState(8000)
@@ -23,31 +24,36 @@ function App(props) {
   // const [stop,setStop]=useState(false)
   var progressBarStyleOne={
     //flex:1,
-    height:22,
+    height:26,
     //width:'calc(100% - px)',
     width:'100%',
     marginLeft:4,
     marginRight:4,
-    backgroundColor:'transparent',
+    paddingTop:0,
+    paddingBottom:0,
+    paddingLeft:0,
+    paddinrgRight:0,
+    backgroundColor:'rgb(110, 110, 110)',
     flexDirection:'column',
     //justifyContent:'center',
     alignItems:'center',
     boxSizing:"border-box",
-    // borderRadius:2,
-    // borderColor:'transparent',
-    // borderStyle:'solid',
+    borderRadius:3,
+    borderColor:'transparent',
+    borderStyle:'solid',
     
   };
   var progressBarStyleTwo={
     //flex:1,
     height:22,
     width:'100%',
+    //width:'calc(100% + 4 px)',
     backgroundColor:'rgb(234,179,65)',
     flex:1,
     flexDirection:'column',
     justifyContent:'center',
     alignItems:'center',
-    borderRadius:11,
+    borderRadius:3,
     borderWidth:1,
     borderColor:'rgb(81,81,81)',
     borderStyle:'solid',
@@ -60,7 +66,9 @@ function App(props) {
       width:0,
       height:0
     },
-    elevation:2
+    elevation:2,
+    transform: `translate(0px, -1px)`,
+    zIndex:2
   };
   var textStyle={
       fontSize: 10,
@@ -75,12 +83,17 @@ function App(props) {
       justifyContent:'center',
       flexDirection:'row',
       margin:5,
-      transform: `translate(0px, -1px)` 
+      transform: `translate(0px, -1px)`,
+      zIndex:1 
   }
   var innerTextStyle={
     overflow: 'hidden',
     whiteSpace: 'nowrap'
   }
+  var buttonStyle={
+    zIndex:0
+    //transform: `translate(0px, -22px)` 
+}
 
   var percentage=0
   var barWidth=150
@@ -264,7 +277,7 @@ function App(props) {
   // },[stop]) 
   const pushed=()=>{
     // if(stop==false){
-      
+      buttonRef.current.display='hide'
       document.getElementById('business').click()
     // }
   }
@@ -276,6 +289,15 @@ function App(props) {
         
         {/* <img src={logo} className="App-logo" alt="logo" /> */}
         <div className="progressBar" style={{...progressBarStyleOne}}>
+        {/* <TouchableOpacity onPress={(e)=>{ 
+            // if(stop==false){
+              pushed()
+            // }
+          }}
+          // style={{buttonStyle}}
+          > */}
+            {/* <Text selectable={false} style={textStyle}><a ref={percentageText} style={innerTextStyle}>Ready</a></Text> */}
+          {/* </TouchableOpacity> */}
           <div ref={bar} style={{...progressBarStyleTwo}}>
             <View
               style={{
@@ -284,7 +306,9 @@ function App(props) {
                 alignItems:'center'
               }}
             >
-              <TouchableOpacity onPress={(e)=>{ 
+              <TouchableOpacity 
+                ref={buttonRef}
+                onPress={(e)=>{ 
                 // if(stop==false){
                   pushed()
                 // }
@@ -293,6 +317,7 @@ function App(props) {
               </TouchableOpacity>
             </View>
           </div>
+          
         </div>
         <input id="business" type="file" multiple webkitdirectory='true' directory='true' style={{display: "none"}}/>
         {/* <DirectoryOpen percent={setPercent}/> */}

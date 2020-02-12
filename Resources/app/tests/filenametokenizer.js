@@ -1,23 +1,43 @@
 var fs = require('fs');
 var path = require('path');
 const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
-var fullPathDirectory=path.join(desktopPath,'mastered_files')
-var newFileList=fs.readdirSync(fullPathDirectory)
-// console.log(newFileList)
+//var fullPathDirectory=path.join(desktopPath,'mastered_files')
+var fullPathDirectory=path.join(desktopPath,'data_prep')
+const isDirectory = filePath => fs.statSync(filePath).isDirectory();
+const getDirectories = filePath =>
+    fs.readdirSync(filePath).map(name => path.join(filePath, name)).filter(isDirectory);
+
+const isFile = filePath => fs.statSync(filePath).isFile();  
+const getFiles = filePath =>
+    fs.readdirSync(filePath).map(name => path.join(filePath, name)).filter(isFile);
+
+const getFilesRecursively = (filePath) => {
+    let dirs = getDirectories(filePath);
+    let files = dirs
+        .map(dir => getFilesRecursively(dir)) // go through each directory
+        .reduce((a,b) => a.concat(b), []);    // map returns a 2d array (array of file arrays) so flatten
+    return files.concat(getFiles(filePath));
+};
+
+var newFileList=getFilesRecursively(fullPathDirectory)
+var filePathList=[]
+for (index in newFileList){
+    if(path.basename(newFileList[index])!='.DS_Store'){
+        filePathList.push(newFileList[index])
+    }
+}
+newFileList=filePathList.slice()
+console.log(newFileList)
 var bagOfWords=[]
 var newBagOfWords={}
 for (index in newFileList){
-    var tempFileNameSplit1=newFileList[index].split('_')
+    //console.log(newFileList[index].replace(/[/_.]/g,' '))
+    newFileList[index]=newFileList[index].replace(/[/_.-]/g,' ')
+    var tempFileNameSplit1=newFileList[index].split(' ')
     for(secIndex in tempFileNameSplit1){
-        var tempFileNameSplit2=tempFileNameSplit1[secIndex].split(' ')
-        for(thirdIndex in tempFileNameSplit2){
-            var tempFileNameSplit3=tempFileNameSplit1[secIndex].split('.')
+        if((fullPathDirectory.replace(/[/_.]/g,' ')).split(' ').indexOf(tempFileNameSplit1[secIndex])===-1){
+            bagOfWords.push(tempFileNameSplit1[secIndex].toLowerCase())
         }
-            for(index4 in tempFileNameSplit3){
-                // bagOfWords.push(tempFileNameSplit3[index4])
-                bagOfWords.push(tempFileNameSplit3[index4].toLowerCase())
-            }
-            
     }
 }
 bagOfWords.sort()
@@ -57,9 +77,6 @@ console.log(byOccurance)
 ////pad
 ////vocal
 //loop
-
-
-
 
 // [
 //     { name: 'oliver', occurance: 786 },
