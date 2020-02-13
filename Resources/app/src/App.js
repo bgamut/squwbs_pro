@@ -5,6 +5,7 @@ import {Text,View,Dimensions,TouchableOpacity} from 'react-native';
 import logo from './assets/squwbs.ico'
 import './App.css';
 import DirectoryOpen from './components/DirectoryOpen'
+import Trainer from './components/Trainer'
 import stringifyObject from 'stringify-object'
 // import prepData from './components/prepData'
 const clearModule = require('clear-module');
@@ -286,18 +287,9 @@ function App(props) {
       <div className='out-most'>
       <div className="outter">
       <div className="App-header">
-        
-        {/* <img src={logo} className="App-logo" alt="logo" /> */}
-        <div className="progressBar" style={{...progressBarStyleOne}}>
-        {/* <TouchableOpacity onPress={(e)=>{ 
-            // if(stop==false){
-              pushed()
-            // }
-          }}
-          // style={{buttonStyle}}
-          > */}
-            {/* <Text selectable={false} style={textStyle}><a ref={percentageText} style={innerTextStyle}>Ready</a></Text> */}
-          {/* </TouchableOpacity> */}
+    
+        {/* <div className="progressBar" style={{...progressBarStyleOne}}>
+   
           <div ref={bar} style={{...progressBarStyleTwo}}>
             <View
               style={{
@@ -318,9 +310,10 @@ function App(props) {
             </View>
           </div>
           
-        </div>
+        </div> */}
+        <Trainer/>
         <input id="business" type="file" multiple webkitdirectory='true' directory='true' style={{display: "none"}}/>
-        {/* <DirectoryOpen percent={setPercent}/> */}
+
       </div>
       </div>
       </div>

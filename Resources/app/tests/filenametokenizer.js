@@ -226,56 +226,57 @@ var listOfExtensions=[
     'mp3',
     'flac'
 ]
+var initHashDict={
+    'one shot':0,
+    'drum':0,
+    'kick':0,
+    'clap':0,
+    'snare':0,
+    'tom':0,
+    'cymbal':0,
+    'open':0,
+    'close':0,
+    'hihat':0,
+    'hh':0,
+    'hat':0,
+    'perc':0,
+    'percussion':0,
+    'loop':0,
+    'vocal':0,
+    'vox':0,
+    'bass':0,
+    'shaker':0,
+    'snap':0,
+    'pad':0,
+    'acoustic':0,
+    'synth':0,
+    'piano':0,
+    'keys':0,
+    'lead':0,
+    'fx':0,
+    'note':0,
+    'ambience':0,
+    'chord':0,
+    'lick':0,
+    'sweep':0,
+    'hit':0,
+    'stab':0,
+    'scratch':0,
+    'voc':0,
+    'organ':0,
+    'guitar':0,
+    'horn':0,
+    'brass':0,
+    'phrase':0,
+    'fill':0,
+    'string':0,
+    'wood':0,
+    'misc':0,
+    'combo':0,
+    'sax':0
+}
 function keywordSearch(filePath){
-    var initHashDict={
-        'one shot':0,
-        'drum':0,
-        'kick':0,
-        'clap':0,
-        'snare':0,
-        'tom':0,
-        'cymbal':0,
-        'open':0,
-        'close':0,
-        'hihat':0,
-        'hh':0,
-        'hat':0,
-        'perc':0,
-        'percussion':0,
-        'loop':0,
-        'vocal':0,
-        'vox':0,
-        'bass':0,
-        'shaker':0,
-        'snap':0,
-        'pad':0,
-        'acoustic':0,
-        'synth':0,
-        'piano':0,
-        'keys':0,
-        'lead':0,
-        'fx':0,
-        'note':0,
-        'ambience':0,
-        'chord':0,
-        'lick':0,
-        'sweep':0,
-        'hit':0,
-        'stab':0,
-        'scratch':0,
-        'voc':0,
-        'organ':0,
-        'guitar':0,
-        'horn':0,
-        'brass':0,
-        'phrase':0,
-        'fill':0,
-        'string':0,
-        'wood':0,
-        'misc':0,
-        'combo':0,
-        'sax':0
-    }
+   
     
     filePath.split('/').forEach(function(word){
         var actualWord=word.toLowerCase()
@@ -294,12 +295,21 @@ newFileList.forEach(function(filePath){
     if(listOfExtensions.indexOf(ext)!==-1){
         theList.push({
             path:filePath,
-            hashes:keywordSearch(filePath)
+            hashes:Object.values(keywordSearch(filePath)),
+            category:''
         }) 
+        Object.keys(initHashDict).forEach(function(key){
+            initHashDict[key]=0
+        })
+        
     }
        
 })
 console.log(theList)
+var json = JSON.stringify({header:Object.keys(initHashDict),data:theList})
+fs.writeFile('soundFilePath.json', json, 'utf8', function(){
+    console.log('soundFilePath.json written')
+})
 return theList
 }
 hashPath(fullPathDirectory)
