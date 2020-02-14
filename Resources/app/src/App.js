@@ -47,8 +47,8 @@ function App(props) {
   };
   var progressBarStyleTwo={
     //flex:1,
-    height:22,
-    width:'100%',
+    height:26,
+    width:'calc(100% + 6px)',
     //width:'calc(100% + 4 px)',
     backgroundColor:'rgb(234,179,65)',
     flex:1,
@@ -69,7 +69,7 @@ function App(props) {
       height:0
     },
     elevation:2,
-    transform: `translate(0px, -1px)`,
+    transform: `translate(-3px, -3px)`,
     zIndex:2
   };
   var textStyle={
@@ -85,7 +85,7 @@ function App(props) {
       justifyContent:'center',
       flexDirection:'row',
       margin:5,
-      transform: `translate(0px, -1px)`,
+      transform: `translate(0px, +1px)`,
       zIndex:1 
   }
   var innerTextStyle={
@@ -114,7 +114,7 @@ function App(props) {
       }
       //console.log(currentIndex)
       //console.log(endIndex)
-      percentage = Math.floor(currentIndex/endIndex*10000)/100
+      percentage = Math.ceil(currentIndex/(endIndex-1)*10000)/100
       barWidth=Math.floor(394*currentIndex/endIndex)
       if (percentage!=0){
         percentageText.current.innerHTML=percentage+' %'
@@ -128,7 +128,8 @@ function App(props) {
         // setStop(false)
       }
       //bar.current.style.width=barWidth+'px'
-      bar.current.style.width=percentage+'%'
+      //bar.current.style.width=percentage+'%'
+      bar.current.style.width='calc('+percentage+'% + 6px)'
       //console.log(bar.current.style.width)
     // }
     
@@ -322,7 +323,7 @@ const postApi=(endPoint,obj,cb)=>{
       <div className="outter">
       <div className="App-header">
     
-        {/* <div className="progressBar" style={{...progressBarStyleOne}}>
+        <div className="progressBar" style={{...progressBarStyleOne}}>
    
           <div ref={bar} style={{...progressBarStyleTwo}}>
             <View
@@ -344,8 +345,8 @@ const postApi=(endPoint,obj,cb)=>{
             </View>
           </div>
           
-        </div> */}
-        <Trainer/>
+        </div>
+        {/* <Trainer/> */}
         <input id="business" type="file" multiple webkitdirectory='true' directory='true' style={{display: "none"}}/>
         {/* <MLFiveKNN/> */}
       </div>

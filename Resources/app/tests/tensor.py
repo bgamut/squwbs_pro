@@ -82,9 +82,9 @@ class LossAndErrorPrintingCallback(tf.keras.callbacks.Callback):
     # print('The average loss for epoch {i} is {:7.2f} and mean absolute error is {:7.2f}.'.format(epoch, logs['loss'], logs['mae']))
 model.fit(x_train,
          y_train,
-         batch_size=64,
-         epochs=300,
-         validation_split=0.125,
+         batch_size=4,
+         epochs=10000,
+         validation_split=0.25,
          shuffle=True
          )
 
@@ -93,4 +93,6 @@ score = model.evaluate(x_test, y_test, batch_size=1, verbose=0, steps=5)
 # Print test accuracy
 print('\n', 'Test accuracy:', score[1])
 # model.save_weights('./checkpoints/my_checkpoint')
-model.save('./checkpoints/my_checkpoint.h5')
+#model.save('./checkpoints/my_checkpoint.h5')
+print(model.predict(x_train[0]))
+model.save_weights('./checkpoints/my_checkpoint.h5')

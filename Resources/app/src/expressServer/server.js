@@ -130,47 +130,47 @@ app.post('/create-json',cors(),function(req,res){
   console.log(req.body)
   //var response=[]
 
-  // fs.writeFile(path.join(__dirname,"../assets/sampleDataLabels.json"),JSON.stringify(req.body,null,4),function(){
-  //   console.log('sampleDataLabels.json written at assets/sampleDataLabels.json')
-  // })
-
-  // res.send({message:'sampleDataLabels.json written at assets/sampleDataLabels.json'})
-  var origJson=req.body
-  var newJson={}
-  var ws=[]
-  var xs=[]
-  var ys=[]
-  var zs=[]
-  origJson.data.forEach(function(data){
-      // var initW=null
-      var initX={}
-      var initY={'label':''}
-      var initZ=''
-      
-      for(var i=0; i<data.hashes.length;i++){
-          //console.log(data.hashes)
-          
-          initX[origJson.header[i]]=data.hashes[i]
-          if(i==Number(data.category)){
-              initY['label']=origJson.header[i]
-              initZ=origJson.header[i]
-          }
-      }
-      // ws.push(initW)
-      ws.push(data.hashes)
-      xs.push(initX)
-      ys.push(initY)
-      zs.push(initZ)
+  fs.writeFile(path.join(__dirname,"../assets/sampleDataLabels.json"),JSON.stringify(req.body,null,4),function(){
+    console.log('sampleDataLabels.json written at assets/sampleDataLabels.json')
   })
-  newJson.ws=ws
-  newJson.xs=xs
-  newJson.ys=ys
-  newJson.zs=zs
-  fs.writeFile(path.join(__dirname,"../assets/sampleDataLabels.json"),JSON.stringify(newJson,null,4),function(){
-      console.log('sampleDataLabels.json written at assets/sampleDataLabels.json')
-    })
+  res.send({message:'sampleDataLabels.json written at assets/sampleDataLabels.json'})
+
+  // var origJson=req.body
+  // var newJson={}
+  // var ws=[]
+  // var xs=[]
+  // var ys=[]
+  // var zs=[]
+  // origJson.data.forEach(function(data){
+  //     // var initW=null
+  //     var initX={}
+  //     var initY={'label':''}
+  //     var initZ=''
+      
+  //     for(var i=0; i<data.hashes.length;i++){
+  //         //console.log(data.hashes)
+          
+  //         initX[origJson.header[i]]=data.hashes[i]
+  //         if(i==Number(data.category)){
+  //             initY['label']=origJson.header[i]
+  //             initZ=origJson.header[i]
+  //         }
+  //     }
+  //     // ws.push(initW)
+  //     ws.push(data.hashes)
+  //     xs.push(initX)
+  //     ys.push(initY)
+  //     zs.push(initZ)
+  // })
+  // newJson.ws=ws
+  // newJson.xs=xs
+  // newJson.ys=ys
+  // newJson.zs=zs
+  // fs.writeFile(path.join(__dirname,"../assets/sampleDataLabels.json"),JSON.stringify(newJson,null,4),function(){
+  //     console.log('sampleDataLabels.json written at assets/sampleDataLabels.json')
+  //   })
     
-  res.send(newJson)
+  // res.send(newJson)
 })
 app.post('/all-files',cors(),function(req,res){
   //var files=req.param('files')
