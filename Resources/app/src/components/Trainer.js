@@ -94,6 +94,7 @@ export default function Trainer(props){
             //console.log(smallerJsonData)
         });
         document.addEventListener("keypress",function(e){
+            console.log(e.keyCode)
             if(e.keyCode==115){
                 console.log('comparison started')
                 var uniqueEntriesOnly=[]

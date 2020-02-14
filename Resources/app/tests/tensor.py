@@ -35,10 +35,10 @@ print(np.array(testYS))
 # x_test =  np.array([[-1, 2, 3], [0, 2, 3], [1, 2, 3], [2, 2, 3], [3, 2, 3], [4, 2, 3]])
 # y_test =  np.array([[1,0,0,0,0], [0,1,0,0,0], [0,1,0,0,0], [0,1,0,0,0], [0,0,1,0,0], [0,0,0,0,1]])
 
-x_train= np.array(testXS)
-y_train=np.array(testYS)
-x_test= np.array(testXS)
-y_test=np.array(testYS)
+x_train= np.array(testXS,dtype=np.float32)
+y_train=np.array(testYS,dtype=np.float32)
+x_test= np.array(testXS,dtype=np.float32)
+y_test=np.array(testYS,dtype=np.float32)
 
 
 print("x_train shape:", x_train.shape, "y_train shape:", y_train.shape)

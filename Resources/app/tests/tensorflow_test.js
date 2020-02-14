@@ -1,5 +1,6 @@
 var tf = require('@tensorflow/tfjs')
 var json = require('../src/assets/sampleDataLabels.json')
+var path = require('path')
 var header=json.header
 var data=json.data
 var testXS=[]
@@ -11,8 +12,8 @@ data.forEach(function(entry){
     initArray[Number(entry.category)]=1
     testYS.push(initArray)
 })
-console.log(testXS)
-console.log(testYS)
+//console.log(testXS)
+//console.log(testYS)
 
 async function run() {
     // Create a simple model.
@@ -54,5 +55,10 @@ async function run() {
     //   console.log(a);
     //model.save()
   }
+  async function loadModel(){
+    const model = await tf.loadLayersModel('http://127.0.0.1:8000/model-json')
+    console.log(model)
+    return model
+  }
   
-  run();
+loadModel()
