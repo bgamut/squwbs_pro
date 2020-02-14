@@ -3,13 +3,44 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pprint import pprint
 import numpy as np
+import json
+obje=[]
+with open('../src/assets/sampleDataLabels.json') as json_file:
+  obje=json.load(json_file)
+  # print(obje)
+  header=obje['header']
+  data=obje['data']
+  testXS=[]
+  testYS=[]
+  for entry in data:
+    # print(entry)
+    initArray= np.zeros(len(header))
+    testXS.append(entry['hashes'])
+    # print(entry['category'])
+    category=int(entry['category'])
+    # print(type(category))
+    initArray[category]=1
+    testYS.append(initArray)
+
+print(np.array(testXS))
+print('=====================================')
+print(np.array(testYS))
+
 # Load the fashion-mnist pre-shuffled train data and test data
 # (x_train, y_train), (x_test, y_test) = tf.keras.datasets.fashion_mnist.load_data()
 # (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-x_train = np.array([[-1, 2, 3], [0, 2, 3], [1, 2, 3], [2, 2, 3], [3, 2, 3], [4, 2, 3]])
-y_train = np.array([[1,0,0,0,0], [0,1,0,0,0], [0,1,0,0,0], [0,1,0,0,0], [0,0,1,0,0], [0,0,0,0,1]])
-x_test =  np.array([[-1, 2, 3], [0, 2, 3], [1, 2, 3], [2, 2, 3], [3, 2, 3], [4, 2, 3]])
-y_test =  np.array([[1,0,0,0,0], [0,1,0,0,0], [0,1,0,0,0], [0,1,0,0,0], [0,0,1,0,0], [0,0,0,0,1]])
+
+# x_train = np.array([[-1, 2, 3], [0, 2, 3], [1, 2, 3], [2, 2, 3], [3, 2, 3], [4, 2, 3]])
+# y_train = np.array([[1,0,0,0,0], [0,1,0,0,0], [0,1,0,0,0], [0,1,0,0,0], [0,0,1,0,0], [0,0,0,0,1]])
+# x_test =  np.array([[-1, 2, 3], [0, 2, 3], [1, 2, 3], [2, 2, 3], [3, 2, 3], [4, 2, 3]])
+# y_test =  np.array([[1,0,0,0,0], [0,1,0,0,0], [0,1,0,0,0], [0,1,0,0,0], [0,0,1,0,0], [0,0,0,0,1]])
+
+x_train= np.array(testXS)
+y_train=np.array(testYS)
+x_test= np.array(testXS)
+y_test=np.array(testYS)
+
+
 print("x_train shape:", x_train.shape, "y_train shape:", y_train.shape)
 # x_train = x_train.reshape(60000, 784).astype('float32') / 255
 # x_test = x_test.reshape(10000, 784).astype('float32') / 255

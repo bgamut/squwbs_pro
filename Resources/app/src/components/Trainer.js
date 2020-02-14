@@ -18,11 +18,6 @@ var smallerJsonData=[]
 var assert = require('assert');
 const path = require('path')
 const withQuery = require('with-query').default;
-
-
-// const DirectoryOpen = (props)=> {
-
-
 export default function Trainer(props){
     const pathTextRef= useRef(null)
     const pickerRef= useRef(null)
@@ -44,7 +39,7 @@ export default function Trainer(props){
             <Picker.Item label={item} value={index} />
         )
         selectList.push(
-            <option value={index}>{item}</option>
+            <option key ={index} value={index}>{item}</option>
         )
     })
     const postApi=(endPoint,obj,cb)=>{
@@ -83,28 +78,11 @@ export default function Trainer(props){
         } 
     }
     useEffect(()=>{
-       //console.log()
-    //    setBlocker(false)
+
         pickerRef.current.addEventListener('change',function(event) {
-            jsonDataCopy[currentIndex].category=pickerRef.current.value
+            jsonDataCopy[currentIndex].category=Number(pickerRef.current.value)
             console.log(currentIndex+" = "+jsonData.header[jsonDataCopy[currentIndex].category])
 
-            // if(smallerJsonData.length!=0){
-            //     for(var i=0; i<smallerJsonData.length; i++){
-            //         console.log(smallerJsonData[i].path)
-            //         console.log(jsonDataCopy[currentIndex].path)
-            //         console.log(smallerJsonData[i].path==jsonDataCopy[currentIndex].path)
-            //         if(smallerJsonData[i].path==jsonDataCopy[currentIndex].path){
-            //             smallerJsonData[i]=jsonDataCopy[currentIndex]
-            //         }
-            //         else{
-            //             smallerJsonData.push(jsonDataCopy[currentIndex])
-            //         }
-            //     }
-            // }
-            // else{
-            //     smallerJsonData.push(jsonDataCopy[currentIndex])
-            // }
             if(includedIndexes.length!=0){
                 if(includedIndexes.includes(currentIndex)==false){
                     includedIndexes.push(currentIndex)
@@ -116,28 +94,14 @@ export default function Trainer(props){
             //console.log(smallerJsonData)
         });
         document.addEventListener("keypress",function(e){
-            //console.log(e.keyCode)
             if(e.keyCode==115){
                 console.log('comparison started')
                 var uniqueEntriesOnly=[]
-                // var pastEntry=''
-                // for(var i =0; smallerJsonData.length; i++){
-                //     //console.log(JSON.stringify(pastEntry))
-                //     //console.log(JSON.stringify(smallerJsonData[i]))
-                //     var currentEntry=JSON.stringify(smallerJsonData[i])
-                //     console.log(pastEntry==currentEntry)
-                //     if(pastEntry!==currentEntry)
-                //     {
-                //         uniqueEntriesOnly.push(smallerJsonData[i])
-                //     }
-                //     pastEntry=currentEntry
-                // }
+
                 console.log(includedIndexes)
                 includedIndexes.forEach(function(integer){ 
-                    // console.log(JSON.stringify(jsonDataCopy[includedIndexes[i]]))
-                    // uniqueEntriesOnly.push(JSON.stringify(jsonDataCopy[includedIndexes[i]]))
                     console.log(JSON.stringify(jsonDataCopy[integer]))
-                    uniqueEntriesOnly.push(JSON.stringify(jsonDataCopy[integer]))
+                    uniqueEntriesOnly.push(jsonDataCopy[integer])
                 })
                 console.log('comparison ended')
                 postApi(
@@ -148,22 +112,8 @@ export default function Trainer(props){
             }
             if(e.keyCode==122){
                 if(currentIndex==0){
-                    console.log('save function fired')  
-                    console.log({header:jsonData.header,data:smallerJsonData})
-                    // postApi(
-                    //     'create-json',
-                    //     {header:jsonData.header,data:smallerJsonData},
-                    //     function(){console.log('check json file')}
-                    // )
-                    // var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({header:jsonData.header,data:jsonDataCopy}));
-                    // var downloadAnchorNode = document.createElement('a');
-                    // downloadAnchorNode.setAttribute("href", dataStr);
-                    // downloadAnchorNode.setAttribute("download",  "sampleTrainData.json");
-                    // document.body.appendChild(downloadAnchorNode); // required for firefox
-                    // downloadAnchorNode.click();
-                    // // downloadAnchorNode.remove();
-                    // document.body.removeChild(downloadAnchorNode);
-                      
+                    // console.log('save function fired')  
+                    console.log({header:jsonData.header,data:smallerJsonData})    
                 }
                 else{
                     jsonDataCopy[currentIndex].category=pickerRef.current.value
@@ -191,29 +141,15 @@ export default function Trainer(props){
                     pathTextRef.current.innerHTML=jsonData.data[currentIndex].path   
                 }
                 else{
-                    console.log('save function fired')
+                    // console.log('save function fired')
                     console.log({header:jsonData.header,data:smallerJsonData})
-                    // postApi(
-                    //     'create-json',
-                    //     {header:jsonData.header,data:smallerJsonData},
-                    //     function(){console.log('check json file')}
-                    // )
-                    // var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({header:jsonData.header,data:jsonDataCopy}));
-                    // var downloadAnchorNode = document.createElement('a');
-                    // downloadAnchorNode.setAttribute("href", dataStr);
-                    // downloadAnchorNode.setAttribute("download",  "sampleTrainData.json");
-                    // document.body.appendChild(downloadAnchorNode); // required for firefox
-                    // downloadAnchorNode.click();
-                    // // downloadAnchorNode.remove();
-                    // document.body.removeChild(downloadAnchorNode);
                 }
             }
             var checker = []
             for (var i=0; i<=currentIndex; i++){
                 checker.push(jsonData.header[jsonDataCopy[currentIndex].category])
             }
-            //console.log(checker)
-           // console.log(jsonDataCopy)
+
         },false)
         jsonCopy.header=jsonData.header
         jsonCopy.data=[]
@@ -229,10 +165,6 @@ export default function Trainer(props){
         console.log('currentIndex is '+ currentIndex)
         console.log('currentPick is '+currentPick)
         pathTextRef.current.innerHTML=jsonData.data[currentIndex].path
-        
-        // setCurrentPick(100)
-        // setBlocker(false)
-        
      },[currentIndex])
 
     return(
@@ -271,18 +203,6 @@ export default function Trainer(props){
                     </a>
                 </Text>
             </View>
-            {/* <Picker
-                ref={pickerRef}
-                selectedValue={currentPickView}
-                style={{height: 33, width: 100, alignItems:'center'}}
-
-                onValueChange={(itemValue, itemIndex) =>{
-                    setCurrentPickView(itemValue)
-                }  
-                }>
-                
-                {pickList}
-            </Picker> */}
             <select 
                 ref={pickerRef}
                 style={{height: 33, width:'33%', alignItems:'center'}}

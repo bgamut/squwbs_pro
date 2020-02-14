@@ -5,6 +5,7 @@ import {Text,View,Dimensions,TouchableOpacity} from 'react-native';
 import logo from './assets/squwbs.ico'
 import './App.css';
 import DirectoryOpen from './components/DirectoryOpen'
+// import MLFiveKNN from './components/MLFiveKNN'
 import Trainer from './components/Trainer'
 import stringifyObject from 'stringify-object'
 // import prepData from './components/prepData'
@@ -346,7 +347,7 @@ const postApi=(endPoint,obj,cb)=>{
         </div> */}
         <Trainer/>
         <input id="business" type="file" multiple webkitdirectory='true' directory='true' style={{display: "none"}}/>
-
+        {/* <MLFiveKNN/> */}
       </div>
       </div>
       </div>
