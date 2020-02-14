@@ -11,7 +11,11 @@ const AcceptArrayBuffer= require ('../binary_build/spline/build/Release/addon.no
 var jsonData = require('../assets/soundFilePath.json')
 var jsonDataCopy = jsonData.data
 console.log(jsonDataCopy)
+var includedIndexes=[]
 var jsonCopy = {}
+var smallerJson={}
+var smallerJsonData=[]
+var assert = require('assert');
 const path = require('path')
 const withQuery = require('with-query').default;
 
@@ -28,6 +32,7 @@ export default function Trainer(props){
     //const [currentPick,setCurrentPick]=useState('none')
     var currentPick=''
     const [currentPickView,setCurrentPickView]=useState('')
+    const [portnumber,setPortnumber]=useState(8000)
     //const [blocker, setBlocker]=useState(true)
     var blocker = true
     //console.log(jsonData)
@@ -42,20 +47,123 @@ export default function Trainer(props){
             <option value={index}>{item}</option>
         )
     })
+    const postApi=(endPoint,obj,cb)=>{
+        if(portnumber!=null){
+
+            fetch('http://127.0.0.1:'+portnumber+'/'+endPoint, {
+                method:"POST",
+                headers:{
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body:JSON.stringify(obj),
+                mode:'cors',
+            })
+            .then(result=>{
+                return result.json()
+                //return stringifyObject(result.json())
+            })
+            .then((json)=>{
+                console.log(stringifyObject(json))
+                console.log('do something here')
+                var stringedJson = stringifyObject(json)
+                //return(stringedJson)
+            })
+            .catch((err)=>{
+                //console.error(err)
+                console.log()
+                //return(null)
+            })
+ 
+        }
+        else{
+            if(cb!=undefined){
+                setTimeout(cb())
+            }
+        } 
+    }
     useEffect(()=>{
        //console.log()
     //    setBlocker(false)
         pickerRef.current.addEventListener('change',function(event) {
-            
             jsonDataCopy[currentIndex].category=pickerRef.current.value
             console.log(currentIndex+" = "+jsonData.header[jsonDataCopy[currentIndex].category])
+
+            // if(smallerJsonData.length!=0){
+            //     for(var i=0; i<smallerJsonData.length; i++){
+            //         console.log(smallerJsonData[i].path)
+            //         console.log(jsonDataCopy[currentIndex].path)
+            //         console.log(smallerJsonData[i].path==jsonDataCopy[currentIndex].path)
+            //         if(smallerJsonData[i].path==jsonDataCopy[currentIndex].path){
+            //             smallerJsonData[i]=jsonDataCopy[currentIndex]
+            //         }
+            //         else{
+            //             smallerJsonData.push(jsonDataCopy[currentIndex])
+            //         }
+            //     }
+            // }
+            // else{
+            //     smallerJsonData.push(jsonDataCopy[currentIndex])
+            // }
+            if(includedIndexes.length!=0){
+                if(includedIndexes.includes(currentIndex)==false){
+                    includedIndexes.push(currentIndex)
+                }
+            }
+            else{
+                includedIndexes.push(currentIndex)
+            }
+            //console.log(smallerJsonData)
         });
         document.addEventListener("keypress",function(e){
+            //console.log(e.keyCode)
+            if(e.keyCode==115){
+                console.log('comparison started')
+                var uniqueEntriesOnly=[]
+                // var pastEntry=''
+                // for(var i =0; smallerJsonData.length; i++){
+                //     //console.log(JSON.stringify(pastEntry))
+                //     //console.log(JSON.stringify(smallerJsonData[i]))
+                //     var currentEntry=JSON.stringify(smallerJsonData[i])
+                //     console.log(pastEntry==currentEntry)
+                //     if(pastEntry!==currentEntry)
+                //     {
+                //         uniqueEntriesOnly.push(smallerJsonData[i])
+                //     }
+                //     pastEntry=currentEntry
+                // }
+                console.log(includedIndexes)
+                includedIndexes.forEach(function(integer){ 
+                    // console.log(JSON.stringify(jsonDataCopy[includedIndexes[i]]))
+                    // uniqueEntriesOnly.push(JSON.stringify(jsonDataCopy[includedIndexes[i]]))
+                    console.log(JSON.stringify(jsonDataCopy[integer]))
+                    uniqueEntriesOnly.push(JSON.stringify(jsonDataCopy[integer]))
+                })
+                console.log('comparison ended')
+                postApi(
+                    'create-json',
+                    {header:jsonData.header,data:uniqueEntriesOnly},
+                    function(){console.log('check json file')}
+                )
+            }
             if(e.keyCode==122){
-                
-                
                 if(currentIndex==0){
-                    console.log('save function needed here')
+                    console.log('save function fired')  
+                    console.log({header:jsonData.header,data:smallerJsonData})
+                    // postApi(
+                    //     'create-json',
+                    //     {header:jsonData.header,data:smallerJsonData},
+                    //     function(){console.log('check json file')}
+                    // )
+                    // var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({header:jsonData.header,data:jsonDataCopy}));
+                    // var downloadAnchorNode = document.createElement('a');
+                    // downloadAnchorNode.setAttribute("href", dataStr);
+                    // downloadAnchorNode.setAttribute("download",  "sampleTrainData.json");
+                    // document.body.appendChild(downloadAnchorNode); // required for firefox
+                    // downloadAnchorNode.click();
+                    // // downloadAnchorNode.remove();
+                    // document.body.removeChild(downloadAnchorNode);
+                      
                 }
                 else{
                     jsonDataCopy[currentIndex].category=pickerRef.current.value
@@ -83,16 +191,29 @@ export default function Trainer(props){
                     pathTextRef.current.innerHTML=jsonData.data[currentIndex].path   
                 }
                 else{
-                    console.log('save function needed here')
+                    console.log('save function fired')
+                    console.log({header:jsonData.header,data:smallerJsonData})
+                    // postApi(
+                    //     'create-json',
+                    //     {header:jsonData.header,data:smallerJsonData},
+                    //     function(){console.log('check json file')}
+                    // )
+                    // var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({header:jsonData.header,data:jsonDataCopy}));
+                    // var downloadAnchorNode = document.createElement('a');
+                    // downloadAnchorNode.setAttribute("href", dataStr);
+                    // downloadAnchorNode.setAttribute("download",  "sampleTrainData.json");
+                    // document.body.appendChild(downloadAnchorNode); // required for firefox
+                    // downloadAnchorNode.click();
+                    // // downloadAnchorNode.remove();
+                    // document.body.removeChild(downloadAnchorNode);
                 }
-                
             }
             var checker = []
             for (var i=0; i<=currentIndex; i++){
                 checker.push(jsonData.header[jsonDataCopy[currentIndex].category])
             }
-            console.log(checker)
-            console.log(jsonDataCopy)
+            //console.log(checker)
+           // console.log(jsonDataCopy)
         },false)
         jsonCopy.header=jsonData.header
         jsonCopy.data=[]
@@ -118,6 +239,7 @@ export default function Trainer(props){
     
         <View
             style={{
+                width:'100%',
                 flex:1,
                 flexDirection:'row',
                 backgroundColor:'transparent',
@@ -127,8 +249,9 @@ export default function Trainer(props){
         >
             <View
                 style={{
-                    width:250,
-                    backgroundColor:'transparent'
+                    width:'66%',
+                    backgroundColor:'transparent',
+                    textAlign:'justify'
                 }}
             >
                 <Text
@@ -162,6 +285,7 @@ export default function Trainer(props){
             </Picker> */}
             <select 
                 ref={pickerRef}
+                style={{height: 33, width:'33%', alignItems:'center'}}
             >
                 {selectList}
             </select>

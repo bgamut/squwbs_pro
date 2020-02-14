@@ -226,7 +226,7 @@ var listOfExtensions=[
     'mp3',
     'flac'
 ]
-var initHashDict={
+var unorderedInitHashDict={
     'one shot':0,
     'drum':0,
     'kick':0,
@@ -275,9 +275,14 @@ var initHashDict={
     'combo':0,
     'sax':0
 }
-function keywordSearch(filePath){
-   
-    
+var keys = Object.keys(unorderedInitHashDict)
+keys.sort()
+var initHashDict={}
+for (var i=0; i<keys.length; i++){
+    initHashDict[keys[i]]=unorderedInitHashDict[keys[i]]
+}
+console.log(initHashDict)
+function keywordSearch(filePath){ 
     filePath.split('/').forEach(function(word){
         var actualWord=word.toLowerCase()
         //keywordList.forEach(function(key){
@@ -305,7 +310,7 @@ newFileList.forEach(function(filePath){
     }
        
 })
-console.log(theList)
+//console.log(theList)
 var json = JSON.stringify({header:Object.keys(initHashDict),data:theList})
 fs.writeFile('soundFilePath.json', json, 'utf8', function(){
     console.log('soundFilePath.json written')

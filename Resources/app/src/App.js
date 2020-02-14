@@ -148,8 +148,41 @@ function App(props) {
             console.error(err)
         })
     }
-    getPortnumberFromJSON()
-    
+    getPortnumberFromJSON()  
+  }
+const postApi=(endPoint,obj,cb)=>{
+  if(portnumber!=null){
+      fetch('http://127.0.0.1:'+portnumber+'/'+endPoint, {
+          method:"POST",
+          headers:{
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+          },
+          body:JSON.stringify(obj),
+          mode:'cors',
+      })
+      .then(result=>{
+          return result.json()
+          //return stringifyObject(result.json())
+      })
+      .then((json)=>{
+          console.log(stringifyObject(json))
+          console.log('do something here')
+          var stringedJson = stringifyObject(json)
+          //return(stringedJson)
+      })
+      .catch((err)=>{
+          //console.error(err)
+          console.log()
+          //return(null)
+      })
+
+  }
+  else{
+      if(cb!=undefined){
+          setTimeout(cb())
+      }
+  } 
 }
   const restApi=async(endPoint,queries,cb)=>{
     // var json = require('../assets/sharedInfo.json')

@@ -123,6 +123,18 @@ app.get('/file-path-list',cors(),function(req,res){
   console.log(fileList)
   res.send({data:fileList})
 })
+app.post('/create-json',cors(),function(req,res){
+  //var files=req.param('files')
+  // res.header("Access-Control-Allow-Origin", "*");
+  
+  console.log(req.body)
+  //var response=[]
+  fs.writeFile(path.join(__dirname,"../assets/sampleDataLabels.json"),JSON.stringify(req.body,null,4),function(){
+    console.log('sampleDataLabels.json written at assets/sampleDataLabels.json')
+  })
+  res.send({message:'sampleDataLabels.json written at assets/sampleDataLabels.json'})
+  //res.send(json)
+})
 app.post('/all-files',cors(),function(req,res){
   //var files=req.param('files')
   var files=req.body.data
