@@ -13,9 +13,12 @@ var child_process=require('child_process')
 const binding = require('../binary_build/spline/build/Release/addon');
 const fft = require('../binary_build/fft/build/Release/addon').AcceptArrayBuffer;
 var PNGImage = require('pngjs-image')
-
-
-
+var extensions=[    
+  'wav',
+  'caf',
+  'mp3',
+  'flac'
+]
 function move(oldPath, newPath, callback) {
 //fs.rename(oldPath, newPath, function (err) {
 fs.copyFile(oldPath, newPath, function (err) {
@@ -181,7 +184,8 @@ app.post('/all-files',cors(),function(req,res){
     //console.log(file)
     var extIndex=file.split('.').length-1
     var fileName = path.basename(file)
-    if(file.split('.')[extIndex]=='wav'){
+    // if(file.split('.')[extIndex]=='wav'){
+    if(extensions.includes(file.split('.')[extIndex])){
         var buffer = fs.readFileSync(file)
         var result = wav.decode(buffer);
         var originalLength=result.channelData[0].length;
