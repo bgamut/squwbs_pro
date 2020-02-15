@@ -341,7 +341,7 @@ var fs = require('fs')
     //mynn.setActivation(NeuralNetwork.ReLU)
     console.log("Before training...");
     console.log(mynn.predict(training_data[0][0]));
-    var epoch=200000
+    var epoch=100000
     // several training epochs
     for(let i=0; i<epoch; i++) {
     var percent='percentage : '+String(Math.floor(i*100000000/epoch)/1000000)
@@ -358,13 +358,17 @@ var fs = require('fs')
         console.log(copyWB)
         var newMyAnn=NeuralNetwork.deserialize(copyWB)
         console.log("cloned train data...");
-        var oneHot=newMyAnn.predict(training_data[0][0]);
-        var max=Math.max(...oneHot)
-        function checkValue(val){
-            return val==max
+        for (var i =0; i<8; i++){
+            var randomPick=Math.floor(Math.random() * training_data.length)
+            var oneHot=newMyAnn.predict(training_data[randomPick][0]);
+            var max=Math.max(...oneHot)
+            function checkValue(val){
+                return val==max
+            }
+            console.log(training_data_pre.data[randomPick].path)
+            console.log(training_data_pre.header[oneHot.findIndex(checkValue)])
         }
-        //console.log(oneHot.findIndex(checkValue))
-        console.log(training_data_pre.header[oneHot.findIndex(checkValue)])
+        
     })
   }
   sampleDataTrain()
