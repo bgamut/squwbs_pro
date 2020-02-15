@@ -374,25 +374,47 @@ var fs = require('fs')
         
     })
   }
-  sampleDataTrain()
+  
+  function predict(filePath){
+    var baseData=require('../src/assets/sampleDataLabels.json').header
+    var initHashDict={}
+    baseData.forEach(function(keyword,index){
+      initHashDict[keyword]=0
+    })
+    function makeHotInput(filePath){ 
+      filePath.split('/').forEach(function(word){
+          var actualWord=word.toLowerCase()
+          //keywordList.forEach(function(key){
+          Object.keys(initHashDict).forEach(function(key){
+              if(actualWord.indexOf(key)!==-1){
+                  initHashDict[key]+=1
+              }
+          })
+      })
+      return Object.values(initHashDict)
+    }
+    var copyWB=require('../src/assets/scratchNN.json')
+    //console.log(copyWB)
+    var newMyAnn=NeuralNetwork.deserialize(copyWB)
+    var hotInput=makeHotInput(filePath)
+    //console.log(hotInput)
+    var oneHot=newMyAnn.predict(hotInput);
+    var sum = oneHot.reduce(function(a,b){return a+b},0)
+    var max=Math.max(...oneHot)
+    function checkValue(val){
+        return val==max
+    }
+    //console.log("============")
+    //console.log(filePath)
+    //console.log(Object.keys(initHashDict)[oneHot.findIndex(checkValue)]+" confidence : "+Math.floor(oneHot[oneHot.findIndex(checkValue)]*10000/sum)/100 + "%")
+    return {
+      path:filePath,
+      confidence:Math.floor(oneHot[oneHot.findIndex(checkValue)]*10000/sum)/100 + "%",
+      classification:Object.keys(initHashDict)[oneHot.findIndex(checkValue)]
+    }
+  }
 
-//   let training_data_pre=require('../src/assets/sampleDataLabels.json')
-//     let training_data=[]
-//     training_data_pre.data.forEach(function(data,index){
-//         var inputArray=data.hashes.slice()
-//         var outputArray=new Array(training_data_pre.header.length).fill(0)
-//         outputArray[data.category]=1
-//         training_data.push([inputArray,outputArray])
-//     })
-//   var newMyAnn=new NeuralNetwork([training_data[0][0].length,training_data[0][0].length,training_data[0][1].length]);
-//     newMyAnn.setActivation(NeuralNetwork.ReLU)
+ // sampleDataTrain()
 
-    
-//     var copyWB=require('../src/assets/scratchNN.json')
-//     console.log(copyWB)
-//     newMyAnn.weights=new Matrix(copyWB.weights.rows,copyWB.weights.cols)
-//     newMyAnn.weights.data=copyWB.weights.data
-//     newMyAnn.biases=new Matrix(copyWB.biases.rows,copyWB.biases.cols)
-//     newMyAnn.biases.data=copyWB.biases.data
-//     console.log("cloned train data...");
-//     console.log(newMyAnn.feedforward(training_data[1][0]));
+var a =predict('/Users/bernardahn/Splice/sounds/packs/#Twerktrap/PL00401_ACID_WAV_#Twerktrap/Prime_Loops_-_#Twerktrap/Vox_Dry/BallUpTheBass.wav')
+console.log(a)
