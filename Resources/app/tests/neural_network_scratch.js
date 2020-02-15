@@ -414,7 +414,7 @@ var fs = require('fs')
     }
   }
 
-//sampleDataTrain()
+sampleDataTrain()
 
-var a =predict('/Users/bernardahn/Splice/sounds/packs/#Twerktrap/PL00401_ACID_WAV_#Twerktrap/Prime_Loops_-_#Twerktrap/Synth_One_Shots/C_Synth04.wav')
-console.log(a)
+// var a =predict('/Users/bernardahn/Splice/sounds/packs/#Twerktrap/PL00401_ACID_WAV_#Twerktrap/Prime_Loops_-_#Twerktrap/Synth_One_Shots/C_Synth04.wav')
+// console.log(a)

@@ -17,7 +17,8 @@
     "react-start": "react-scripts start",
     "react-build": "react-scripts build",
     "react-test": "react-scripts test",
-    "react-eject": "react-scripts eject"
+    "react-eject": "react-scripts eject",
+    "train": "node ./tests/neural_network_scratch.js"
   },
   "author": "",
   "license": "ISC",
