@@ -341,7 +341,7 @@ var fs = require('fs')
     //mynn.setActivation(NeuralNetwork.ReLU)
     console.log("Before training...");
     console.log(mynn.predict(training_data[0][0]));
-    var epoch=100000
+    var epoch=300000
     // several training epochs
     for(let i=0; i<epoch; i++) {
     var percent='percentage : '+String(Math.floor(i*100000000/epoch)/1000000)
@@ -361,13 +361,16 @@ var fs = require('fs')
         for (var i =0; i<8; i++){
             var randomPick=Math.floor(Math.random() * training_data.length)
             var oneHot=newMyAnn.predict(training_data[randomPick][0]);
+            var sum = oneHot.reduce(function(a,b){return a+b},0)
             var max=Math.max(...oneHot)
             function checkValue(val){
                 return val==max
             }
+            console.log("============")
             console.log(training_data_pre.data[randomPick].path)
-            console.log(training_data_pre.header[oneHot.findIndex(checkValue)])
+            console.log(training_data_pre.header[oneHot.findIndex(checkValue)]+" confidence : "+Math.floor(oneHot[oneHot.findIndex(checkValue)]*10000/sum)/100 + "%")
         }
+        console.log("============")
         
     })
   }
