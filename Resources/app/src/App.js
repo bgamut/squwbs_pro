@@ -251,37 +251,6 @@ const postApi=(endPoint,obj,cb)=>{
       console.log('started')
       handshake()
       //getPort()
-      
-      document.getElementById('business').onchange = function(e){ 
-      //document.getElementById('business').oninput = function(e){
-          setCurrentIndex(0)
-          var files = e.target.files; 
-          var filePaths =[];
-          var obj={}
-          for (var i = 0; i < files.length; i++) {
-              filePaths.push(files[i].path)
-          }
-          var fileIndex=0
-          obj.files=filePaths
-          //  restApi('file-path-list',obj)
-          var i = 0
-          function callback(){
-              
-          }
-          //postApi("all-files",{data:filePaths})
-          async function start(){
-              var endGame=filePaths.length
-              for(var i =0; i<endGame; i++){
-                  var obj={file:filePaths[i],fraction:i/filePaths.length,currentGame:i,endGame:endGame}
-                  //console.log(obj)
-                  var json= await restApi("one-file",obj)
-                  //console.log(json)
-              }
-          }
-          start()
-          
-        
-      }
   },[])
   useEffect(()=>{
       if(handshakeStatus==true){
@@ -295,11 +264,7 @@ const postApi=(endPoint,obj,cb)=>{
   },[portnumber])
   useEffect(()=>{
       if(updates!=null && typeof(updates)!=='undefined'){
-      //console.log(updates.data)
-          //props.percent(updates.data.fraction,updates.data.currentIndex,updates.data.endIndex)
-          //setEndIndex(updates.data.endIndex)
-          //endIndex=parseInt(updates.data.endGame)
-          //props.percent(endIndex)
+
           setPercent(parseInt(updates.data.endGame))
       }
   },[updates])
@@ -323,7 +288,7 @@ const postApi=(endPoint,obj,cb)=>{
       <div className="outter">
       <div className="App-header">
     
-        <div className="progressBar" style={{...progressBarStyleOne}}>
+        {/* <div className="progressBar" style={{...progressBarStyleOne}}>
    
           <div ref={bar} style={{...progressBarStyleTwo}}>
             <View
@@ -345,9 +310,9 @@ const postApi=(endPoint,obj,cb)=>{
             </View>
           </div>
           
-        </div>
-        {/* <Trainer/> */}
-        <input id="business" type="file" multiple webkitdirectory='true' directory='true' style={{display: "none"}}/>
+        </div> */}
+        <Trainer/>
+        {/* <input id="business" type="file" multiple webkitdirectory='true' directory='true' style={{display: "none"}}/> */}
         {/* <MLFiveKNN/> */}
       </div>
       </div>

@@ -193,7 +193,8 @@ console.log(byOccurance)
 var fs = require('fs');
 var path = require('path');
 const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
-var fullPathDirectory='/Users/Shared/'
+//var fullPathDirectory='/Users/Shared/'
+var fullPathDirectory='/Users/bernardahn/Splice'
 function hashPath(fullPathDirectory){
     const isDirectory = filePath => fs.statSync(filePath).isDirectory();
     const getDirectories = filePath =>
