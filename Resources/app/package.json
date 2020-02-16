@@ -18,7 +18,10 @@
     "react-build": "react-scripts build",
     "react-test": "react-scripts test",
     "react-eject": "react-scripts eject",
-    "train": "node ./tests/neural_network_scratch.js"
+    "train": "node ./tests/neural_network_scratch.js",
+    "prepack":"py2applet --make-setup squwbs_pro.py",
+    "pack":"python setup.py py2app -A",
+    "postpack":"cp -R ./copy_to_app/Frameworks ./dist/squwbs_pro.app/Contents && rm ./dist/squwbs_pro.app/Contents/info.plist && cp ./copy_to_app/info.plist ./dist/squwbs_pro.app/Contents  && mkdir ./dist/squwbs_pro.app/Contents/Resources/app && mv ./dist/squwbs_pro.app ../ && cp -R ./ ../squwbs_pro.app/Contents/Resources/app"
   },
   "author": "",
   "license": "ISC",
