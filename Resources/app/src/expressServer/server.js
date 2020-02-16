@@ -426,8 +426,10 @@ var net = require('net')
 var wav = require('node-wav');
 var isWav=require('is-wav')
 var child_process=require('child_process')
+//=============
 const binding = require('../binary_build/spline/build/Release/addon');
 const fft = require('../binary_build/fft/build/Release/addon').AcceptArrayBuffer;
+//=============
 // var PNGImage = require('pngjs-image')
 var extensions=[    
   'wav',
@@ -1107,7 +1109,7 @@ app.get('/one-file',cors(),function(req,res){
   // writePNG(filePath)
    
   function soundBetter(file){
-    //console.log(file)
+
     var extIndex=file.split('.').length-1
     var fileName = path.basename(file)
    
@@ -1124,11 +1126,13 @@ app.get('/one-file',cors(),function(req,res){
           var fileName=path.basename(filePath)
           var fileNameOnly=fileName.split('.')[0]
           var newFileName=fileNameOnly+'.'+desiredExt
-          //var newOutputFilePath=path.join(tempAudioDir,newFileName)
+
           var newOutputFilePath=path.join(targetDir,newFileName)
           console.log(newOutputFilePath)
-          var baseCommand=path.join(__dirname,'../binary_build/ffmpeg_convert/dist/convert')
-          var command=baseCommand+' inputFilePath="'+filePath+'" outputFilePath="'+newOutputFilePath+'" errorDir="'+errorPathDirectory+'"'
+          //var baseCommand=path.join(__dirname,'../binary_build/ffmpeg_convert/dist/convert')
+          //var command=baseCommand+' inputFilePath="'+filePath+'" outputFilePath="'+newOutputFilePath+'" errorDir="'+errorPathDirectory+'"'
+          var baseCommand=path.join(__dirname,'../bin/ffmpeg')
+          var command=baseCommand+' -i '+filePath+' -y -hide_banner '+newOutputFilePath
           child_process.exec(command,function(err,stdout,stderr){
             console.log(stdout)
             if(err!==null){  
@@ -1215,21 +1219,7 @@ app.get('/one-file',cors(),function(req,res){
             const float32arrayLeft = new Float32Array(tempArray);
             var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
             spectrogram.push(fft(int32arrayLeft.buffer,sampleRate));
-        }
-        // var end = process.hrtime(start)
-        // var image=PNGImage.createImage(width,height);
-        // image.fillRect(0,0,width,height,{red:255,green:255,blue:255,alpha:255})
-        // for (var j=0; j<height; j++){
-        //     for(var i=0; i<width; i++){
-        //         var gray=Math.floor(255*spectrogram[i][j])
-        //         image.setAt(i,height-j,{red:gray,green:gray,blue:gray,alpha:255})
-        //     }
-        // }
-
-        // var createdImagePath=path.join('../assets',fileName+'.png')
-        // var createdImagePath=path.join(__dirname,'../assets/images/'+fileName+'.png')
-        // image.writeImage(createdImagePath, function (error) {
-          //console.log('server Image creation : '+error)
+          }
           function callbackOne(){
             warmWav(path.join(tempAudioDir,fileName),path.join(wavDirectory,fileName))
           }
@@ -1238,37 +1228,11 @@ app.get('/one-file',cors(),function(req,res){
             callbackOne()
           })
           function check(filePath,i,endIndex,timeout){
-            // PNGImage.readImage(filePath, function (err, image) {
-              // changeSoundExt(filePath,tempAudioDir,'wav',function(){
-              //   console.log(fileName)
-              // })
-              // if(typeof(err)==='undefined'){
-                // return(true)
-                var obj={file:filePath,message:'success',fraction:fraction,currentGame:currentGame,endGame:endGame}
-                // console.log(obj)
-                
-                console.log(currentGame + ' / '+endGame )
-                res.send({data:obj})
-              // }
-              // else{
-              //   // if(i<endIndex){
-              //   //   setTimeout(function(){check(filePath,i+1,endIndex,timeout)},timeout)
-              //   // }
-              //   // else{
-              //   //   //return false;
-              //     var obj={file:filePath,message:'questionable',fraction:fraction,currentGame:currentGame,endGame:endGame}
-              //     // console.log(obj)
-              //     console.log(currentGame + ' / '+endGame )
-              //     res.send({data:obj})
-              //   // }
-              // }
-              
-              
-            // });
+            var obj={file:filePath,message:'success',fraction:fraction,currentGame:currentGame,endGame:endGame}
+            console.log(currentGame + ' / '+endGame )
+            res.send({data:obj})
           }
           check(finalFullPathDirectory,0,10,800)
-        // })
-
       }
     else{
       var obj={file:filePath,message:'not wav',fraction:fraction,currentGame:currentGame,endGame:endGame}
@@ -1278,21 +1242,6 @@ app.get('/one-file',cors(),function(req,res){
     }
   
   soundBetter(filePath)
-
-    
-    // console.log("----")
-    //console.log(filePath)
-    
-    // if(typeof(loggit)==='undefined'){
-    //   check(filePath,0,10,5000)
-    // }
-    // console.log("loggit + filePath " + loggit+ ' : '+filePath)
-    // var obj={file:filePath}
-    //console.log(result)
-    //res.send({data:obj})
-  
-  
-  
 })
 //console.log(path.join(__dirname,'../../build'))
 console.log('server started in port number : '+String(portnumber))

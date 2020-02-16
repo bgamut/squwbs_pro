@@ -11,6 +11,7 @@ import stringifyObject from 'stringify-object'
 // import prepData from './components/prepData'
 const clearModule = require('clear-module');
 const withQuery = require('with-query').default;
+var child_process=require('child_process')
 
 function App(props) {
 
@@ -287,6 +288,20 @@ const postApi=(endPoint,obj,cb)=>{
   
   
         }
+        // var baseCommand=path.join(__dirname,'./binary_build/ffmpeg_convert/dist/convert')
+        // var filePath = '/Users/bernardahn/Desktop/data_prep/loops/140_G#m_Dolphin_SoftChords.wav'
+        // var newOutputFilePath='/Users/bernardahn/Desktop/140_G#m_Dolphin_SoftChords.mp3'
+        // var errorPathDirectory='/Users/bernardahn/Desktop/data_prep/error'
+        // var command=baseCommand+' inputFilePath="'+filePath+'" outputFilePath="'+newOutputFilePath+'" errorDir="'+errorPathDirectory+'"'
+        // child_process.exec(command,function(err,stdout,stderr){
+        //   console.log(stdout)
+        //   if(err!==null){  
+        //     console.log(err)
+        //   }
+        //   if(typeof(cb)!=='undefined'){
+        //     cb()
+        //   }
+        // }) 
   },[])
   useEffect(()=>{
       if(handshakeStatus==true){

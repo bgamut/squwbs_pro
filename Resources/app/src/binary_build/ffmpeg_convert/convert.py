@@ -64,6 +64,7 @@ def run(inputFilePath,outputFilePath,errorDir):
     # p = Popen(['ffmpeg','-i',inputFilePath,'-y','-hide_banner',outputFilePath], stderr=PIPE)
     # output, err = p.communicate(b"input data that is passed to subprocess' stdin")
     try:
+        # subprocess.call(['ffmpeg','-i',inputFilePath,'-y','-hide_banner',outputFilePath])
         subprocess.call(['ffmpeg','-i',inputFilePath,'-y','-hide_banner',outputFilePath])
         # output= check_output(command,stderr=STDOUT)
         return 0
