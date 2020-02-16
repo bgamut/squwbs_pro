@@ -1,3 +1,5 @@
+var fs = require('fs')
+var path = require('path')
 class Matrix {
   constructor(rows, cols) {
     this.rows = rows;
@@ -312,7 +314,7 @@ class ActivationFunction {
   
   }
 
-var fs = require('fs')
+
 
   function sampleDataTrain() {
 
@@ -413,8 +415,26 @@ var fs = require('fs')
       classification:Object.keys(initHashDict)[oneHot.findIndex(checkValue)]
     }
   }
+const isDirectory = filePath => fs.statSync(filePath).isDirectory();
+const getDirectories = filePath =>
+    fs.readdirSync(filePath).map(name => path.join(filePath, name)).filter(isDirectory);
 
-sampleDataTrain()
+const isFile = filePath => fs.statSync(filePath).isFile();  
+const getFiles = filePath =>
+    fs.readdirSync(filePath).map(name => path.join(filePath, name)).filter(isFile);
+
+const getFilesRecursively = (filePath) => {
+    let dirs = getDirectories(filePath);
+    let files = dirs
+        .map(dir => getFilesRecursively(dir)) // go through each directory
+        .reduce((a,b) => a.concat(b), []);    // map returns a 2d array (array of file arrays) so flatten
+    return files.concat(getFiles(filePath));
+};
+var a = getFilesRecursively('/Users/shared')
+a.forEach(function(individualFilePath){
+  console.log(predict(individualFilePath).classification)
+})
+
 
 // var a =predict('/Users/bernardahn/Splice/sounds/packs/#Twerktrap/PL00401_ACID_WAV_#Twerktrap/Prime_Loops_-_#Twerktrap/Synth_One_Shots/C_Synth04.wav')
 // console.log(a)
