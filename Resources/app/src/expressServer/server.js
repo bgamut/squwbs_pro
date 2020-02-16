@@ -323,7 +323,7 @@ var fs = require('fs')
     //     [[0,0], [0]],
     //   ];
 
-    let training_data_pre=require('../src/assets/sampleDataLabels.json')
+    let training_data_pre=require('../assets/sampleDataLabels.json')
     let training_data=[]
     training_data_pre.data.forEach(function(data,index){
         var inputArray=data.hashes.slice()
@@ -352,9 +352,9 @@ var fs = require('fs')
     }
     console.log("After training...");
     console.log(mynn.predict(training_data[0][0]));
-    fs.writeFile('../src/assets/scratchNN.json', mynn.serialize(), 'utf8', function(){
-        console.log('./src/assets/scratchNN.json written')
-        var copyWB=require('../src/assets/scratchNN.json')
+    fs.writeFile('../assets/scratchNN.json', mynn.serialize(), 'utf8', function(){
+        console.log('./assets/scratchNN.json written')
+        var copyWB=require('../assets/scratchNN.json')
         console.log(copyWB)
         var newMyAnn=NeuralNetwork.deserialize(copyWB)
         console.log("cloned train data...");
@@ -376,7 +376,7 @@ var fs = require('fs')
   }
   
   function predict(filePath){
-    var baseData=require('../src/assets/sampleDataLabels.json').header
+    var baseData=require('../assets/sampleDataLabels.json').header
     var initHashDict={}
     baseData.forEach(function(keyword,index){
       initHashDict[keyword]=0
@@ -393,7 +393,7 @@ var fs = require('fs')
       })
       return Object.values(initHashDict)
     }
-    var copyWB=require('../src/assets/scratchNN.json')
+    var copyWB=require('../assets/scratchNN.json')
     //console.log(copyWB)
     var newMyAnn=NeuralNetwork.deserialize(copyWB)
     var hotInput=makeHotInput(filePath)
@@ -699,6 +699,47 @@ app.get('/model-json', (req, res) => {
  
 
 });
+app.get('/clean-empty',cors(),function(req,res){
+  const isDirectory = filePath => fs.statSync(filePath).isDirectory();
+  const getDirectories = filePath =>
+      fs.readdirSync(filePath).map(name => path.join(filePath, name)).filter(isDirectory);
+
+  const isFile = filePath => fs.statSync(filePath).isFile();  
+  const getFiles = filePath =>
+      fs.readdirSync(filePath).map(name => path.join(filePath, name)).filter(isFile);
+
+  const getFilesRecursively = (filePath) => {
+      let dirs = getDirectories(filePath);
+      let files = dirs
+          .map(dir => getFilesRecursively(dir)) // go through each directory
+          .reduce((a,b) => a.concat(b), []);    // map returns a 2d array (array of file arrays) so flatten
+      return files.concat(getFiles(filePath));
+  };
+  const isDir = filePath => fs.statSync(filePath).isDirectory(); 
+  const getDirs = filePath =>
+      fs.readdirSync(filePath).map(name => path.join(filePath, name)).filter(isDir);
+
+  const getDirsRecursively = (filePath) => {
+      let dirs = getDirs(filePath);
+      
+      let subDirs = dirs
+          .map(dir => getDirsRecursively(dir)) // go through each directory
+          .reduce((a,b) => a.concat(b), []);    // map returns a 2d array (array of file arrays) so flatten
+      return subDirs.concat(getDirs(filePath));
+  };
+  const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
+  var fullPathDirectory=path.join(desktopPath,'mastered_files')
+  var allSubDirectories=getDirsRecursively(fullPathDirectory)
+  allSubDirectories.forEach((dir,index)=>{
+    fs.readdir(dir,(err,files)=>{
+      if(files.length==0){
+        fs.rmdirSync(dir)
+      }
+    })
+  })
+  
+  
+})
 app.get('/one-file',cors(),function(req,res){
 
   var filePath=req.query.file
@@ -708,17 +749,40 @@ app.get('/one-file',cors(),function(req,res){
   var userDetails;
   const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
   var fullPathDirectory=path.join(desktopPath,'mastered_files')
-  var tempAudioDir=path.join(fullPathDirectory,'temp_audio')
-  var wavDirectory=path.join(fullPathDirectory,'wav')
-  var errorPathDirectory=path.join(fullPathDirectory,'error_files')
-  var nextFullPathDirectory=path.join(fullPathDirectory,'mastered_fixed')
+  var tempAudioDir=path.join(fullPathDirectory,'.temp_audio')
+  var wavDirectory=path.join(fullPathDirectory,'.wav')
+  var errorPathDirectory=path.join(fullPathDirectory,'.error_files')
+  var nextFullPathDirectory=path.join(fullPathDirectory,'.mastered_fixed')
+  var miscDirectory=path.join(fullPathDirectory,'Misc')
   var drumsDirectory=path.join(fullPathDirectory,'Drum')
   var loopsDirectory=path.join(fullPathDirectory,'Loops')
   var inDrumsDir=['Clap','Cymbal','Open Hat','Closed Hat','Kick','Percussion','Shaker','Snare','Tom']
+  var inOtherDir=['Loops','Chords','One Shots','Vocals']
+  var inOtherDirSingular=['Loop','Chord','One Shot','Vocal']
   var oneshotsDirectory=path.join(fullPathDirectory,'One Shots')
-  var classification='one shot'
+  var chordsDirectory=path.join(fullPathDirectory,'Chords')
+  var vocalsDirectory=path.join(fullPathDirectory,'Vocals')
+  var classification=predict(filePath).classification
+  function getFinalPathDir(classification){
+    const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
+    var fullPathDirectory=path.join(desktopPath,'mastered_files')
+    var finalFullPathDirectory= path.join(fullPathDirectory,'Misc')
+    inDrumsDir.forEach((subDirName)=>{
+      if(classification==subDirName.toLowerCase()){
+        finalFullPathDirectory=path.join(drumsDirectory,subDirName)
+      }
+    })
+    inOtherDirSingular.forEach((classCheck,index)=>{
+      if(classification==classCheck.toLowerCase()){
+        finalFullPathDirectory=path.join(fullPathDirectory,inOtherDir[index])
+      }
+    })
+    
 
-  var finalFullPathDirectory=''
+    return finalFullPathDirectory
+  }
+  var finalFullPathDirectory=getFinalPathDir(classification)
+  console.log(finalFullPathDirectory)
   //var tempAudioDir=path.join(fullPathDirectory,'.temp_audio')
   //var wavDirectory=path.join(fullPathDirectory,'.wav')
   //var errorPathDirectory=path.join(fullPathDirectory,'.error_files')
@@ -738,48 +802,56 @@ app.get('/one-file',cors(),function(req,res){
       if(fs.existsSync(nextFullPathDirectory)==false){
         fs.mkdirSync(nextFullPathDirectory) 
       }
-      
-      classification=predict(filePath).classification
-      // if(fs.existsSync(drumsDirectory)==false){
-      //   fs.mkdirSync(drumsDirectory)
-      // }
-      // inDrumsDir.forEach(function(subDir){
-      //   var subPath=path.join(drumsDirectory,subDir)
-      //   if(fs.existsSync(subPath)==false){
-      //     fs.mkdirSync(subPath)
-      //   }
-      // })
-      // if(fs.existsSync(oneshotsDirectory)==false){
-      //   fs.mkdirSync(oneshotsDirectory)
-      // }
-      // if(fs.existsSync(loopsDirectory)==false){
-      //   fs.mkdirSync(loopsDirectory)
-      // }
-      inDrumsDir.forEach(function(subDirName){
-        if (classification==subDirName.toLowerCase()){
-          if(fs.existsSync(drumsDirectory)==false){
-            fs.mkdir(drumsDirectory,function(){
-              var subPath=path.join(drumsDirectory,subDir)
-              if(fs.existsSync(subPath)==false){
-                fs.mkdirSync(subPath)
-                finalFullPathDirectory=subPath
-              }
-            })
-          }
+      if(fs.existsSync(drumsDirectory)==false){
+        fs.mkdirSync(drumsDirectory)
+      }
+      inDrumsDir.forEach(function(subDir){
+        var subPath=path.join(drumsDirectory,subDir)
+        if(fs.existsSync(subPath)==false){
+          fs.mkdirSync(subPath)
         }
       })
-      if(classification='one shot'){
-        if(fs.existsSync(oneshotsDirectory)==false){
-          fs.mkdirSync(oneshotsDirectory)
-        }
-        finalFullPathDirectory=oneshotsDirectory
+      if(fs.existsSync(oneshotsDirectory)==false){
+        fs.mkdirSync(oneshotsDirectory)
       }
-      else if(classification='loops'){
-        if(fs.existsSync(loopsDirectory)==false){
-          fs.mkdirSync(loopsDirectory)
-        }
-        finalFullPathDirectory=oneshotsDirectory
+      if(fs.existsSync(loopsDirectory)==false){
+        fs.mkdirSync(loopsDirectory)
       }
+      if(fs.existsSync(chordsDirectory)==false){
+        fs.mkdirSync(chordsDirectory)
+      }
+      if(fs.existsSync(miscDirectory)==false){
+        fs.mkdirSync(miscDirectory)
+      }
+      if(fs.existsSync(vocalsDirectory)==false){
+        fs.mkdirSync(vocalsDirectory)
+      }
+
+      // inDrumsDir.forEach(function(subDirName){
+      //   if (classification==subDirName.toLowerCase()){
+      //     if(fs.existsSync(drumsDirectory)==false){
+      //       fs.mkdir(drumsDirectory,function(){
+      //         var subPath=path.join(drumsDirectory,subDir)
+      //         if(fs.existsSync(subPath)==false){
+      //           fs.mkdirSync(subPath)
+      //           finalFullPathDirectory=subPath
+      //         }
+      //       })
+      //     }
+      //   }
+      // })
+      // if(classification='one shot'){
+      //   if(fs.existsSync(oneshotsDirectory)==false){
+      //     fs.mkdirSync(oneshotsDirectory)
+      //   }
+      //   finalFullPathDirectory=oneshotsDirectory
+      // }
+      // else if(classification='loop'){
+      //   if(fs.existsSync(loopsDirectory)==false){
+      //     fs.mkdirSync(loopsDirectory)
+      //   }
+      //   finalFullPathDirectory=oneshotsDirectory
+      // }
     }) 
   }
   else{
@@ -798,30 +870,51 @@ app.get('/one-file',cors(),function(req,res){
     if(fs.existsSync(drumsDirectory)==false){
       fs.mkdirSync(drumsDirectory)
     }
-    inDrumsDir.forEach(function(subDirName){
-      if (classification==subDirName.toLowerCase()){
-        if(fs.existsSync(drumsDirectory)==false){
-          fs.mkdir(drumsDirectory,function(){
-            var subPath=path.join(drumsDirectory,subDir)
-            if(fs.existsSync(subPath)==false){
-              fs.mkdirSync(subPath)
-              finalFullPathDirectory=subPath
-            }
-          })
-        }
+    // inDrumsDir.forEach(function(subDirName){
+    //   if (classification==subDirName.toLowerCase()){
+    //     if(fs.existsSync(drumsDirectory)==false){
+    //       fs.mkdir(drumsDirectory,function(){
+    //         var subPath=path.join(drumsDirectory,subDir)
+    //         if(fs.existsSync(subPath)==false){
+    //           fs.mkdirSync(subPath)
+    //           finalFullPathDirectory=subPath
+    //         }
+    //       })
+    //     }
+    //   }
+    // })
+    // if(classification='one shot'){
+    //   if(fs.existsSync(oneshotsDirectory)==false){
+    //     fs.mkdirSync(oneshotsDirectory)
+    //   }
+    //   finalFullPathDirectory=oneshotsDirectory
+    // }
+    // else if(classification='loop'){
+    //   if(fs.existsSync(loopsDirectory)==false){
+    //     fs.mkdirSync(loopsDirectory)
+    //   }
+    //   finalFullPathDirectory=oneshotsDirectory
+    // }
+    inDrumsDir.forEach(function(subDir){
+      var subPath=path.join(drumsDirectory,subDir)
+      if(fs.existsSync(subPath)==false){
+        fs.mkdirSync(subPath)
       }
     })
-    if(classification='one shot'){
-      if(fs.existsSync(oneshotsDirectory)==false){
-        fs.mkdirSync(oneshotsDirectory)
-      }
-      finalFullPathDirectory=oneshotsDirectory
+    if(fs.existsSync(oneshotsDirectory)==false){
+      fs.mkdirSync(oneshotsDirectory)
     }
-    else if(classification='loops'){
-      if(fs.existsSync(loopsDirectory)==false){
-        fs.mkdirSync(loopsDirectory)
-      }
-      finalFullPathDirectory=oneshotsDirectory
+    if(fs.existsSync(loopsDirectory)==false){
+      fs.mkdirSync(loopsDirectory)
+    }
+    if(fs.existsSync(chordsDirectory)==false){
+      fs.mkdirSync(chordsDirectory)
+    }
+    if(fs.existsSync(miscDirectory)==false){
+      fs.mkdirSync(miscDirectory)
+    }
+    if(fs.existsSync(vocalsDirectory)==false){
+      fs.mkdirSync(vocalsDirectory)
     }
   }
   
@@ -975,7 +1068,9 @@ app.get('/one-file',cors(),function(req,res){
               if(typeof(err)==='undefined'){
                 // return(true)
                 var obj={file:filePath,message:'success',fraction:fraction,currentGame:currentGame,endGame:endGame}
-                console.log(obj)
+                // console.log(obj)
+                
+                console.log(currentGame + ' / '+endGame )
                 res.send({data:obj})
               }
               else{
@@ -985,7 +1080,8 @@ app.get('/one-file',cors(),function(req,res){
                 // else{
                 //   //return false;
                   var obj={file:filePath,message:'questionable',fraction:fraction,currentGame:currentGame,endGame:endGame}
-                  console.log(obj)
+                  // console.log(obj)
+                  console.log(currentGame + ' / '+endGame )
                   res.send({data:obj})
                 // }
               }

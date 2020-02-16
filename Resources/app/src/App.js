@@ -120,6 +120,12 @@ function App(props) {
         percentageText.current.innerHTML=percentage+' %'
         if(currentIndex==endIndex-1){
           percentageText.current.innerHTML="Ready"
+          var obj={}
+          restApi("clean-empty",obj).then(
+            (json)=>{
+              
+            }
+          )
           //setStop(false)
         }
       }
