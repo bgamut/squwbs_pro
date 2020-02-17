@@ -1109,116 +1109,119 @@ app.get('/one-file',cors(),function(req,res){
   // writePNG(filePath)
    
   function soundBetter(file){
-
+    var extensions = ['wav','caf','mp3','flac']
     var extIndex=file.split('.').length-1
     var fileName = path.basename(file)
    
-    if(file.split('.')[extIndex]=='wav'){
-        var buffer = fs.readFileSync(file)
-        var result = wav.decode(buffer);
-        var originalLength=result.channelData[0].length;
-        var sampleRate=result.sampleRate
-        var newArray=[]
-        var frontSilenceTrim=false
-        var endSilenceTrim=false
-        var start=process.hrtime();
-        function changeSoundExt(filePath,targetDir,desiredExt,cb){
-          var fileName=path.basename(filePath)
-          var fileNameOnly=fileName.split('.')[0]
-          var newFileName=fileNameOnly+'.'+desiredExt
-
-          var newOutputFilePath=path.join(targetDir,newFileName)
-          console.log(newOutputFilePath)
-          //var baseCommand=path.join(__dirname,'../binary_build/ffmpeg_convert/dist/convert')
-          //var command=baseCommand+' inputFilePath="'+filePath+'" outputFilePath="'+newOutputFilePath+'" errorDir="'+errorPathDirectory+'"'
-          var baseCommand=path.join(__dirname,'../bin/ffmpeg')
-          var command=baseCommand+' -i '+filePath+' -y -hide_banner '+newOutputFilePath
-          child_process.exec(command,function(err,stdout,stderr){
-            console.log(stdout)
-            if(err!==null){  
-              console.log(err)
+    //if(file.split('.')[extIndex]=='wav'){
+    if(extensions.indexOf(file.split('.')[extIndex])!=-1){
+          function create_spectrogram(file){
+            var buffer = fs.readFileSync(file)
+            var result = wav.decode(buffer);
+            var originalLength=result.channelData[0].length;
+            var sampleRate=result.sampleRate
+            var newArray=[]
+            var frontSilenceTrim=false
+            var endSilenceTrim=false
+            var start=process.hrtime();
+            for (var i=0; i<originalLength; i++){
+                if (Math.abs(result.channelData[0][i])>0.0025){
+                    frontSilenceTrim=true
+                }
+                if(frontSilenceTrim==true){
+                    newArray.push(result.channelData[0][i])
+                }
             }
-            if(typeof(cb)!=='undefined'){
-              cb()
+            originalLength=newArray.length
+            for (var i=originalLength-1; i>=0; i-=1){
+                if(endSilenceTrim==false){
+                    if (Math.abs(result.channelData[0][i])<0.0025){
+                        newArray.splice(-1,1)
+                    }
+                    else{
+                        endSilenceTrim=true
+                        originalLength=i+1
+                    }
+                }
             }
-          }) 
-        }
-        function warmWav(wavPath, newFilePath){
-          const warmer = require('../binary_build/spline/build/Release/addon');
-          var buffer = fs.readFileSync(wavPath);
-          var result = wav.decode(buffer);
-          var arbitraryLength=result.channelData[0].length;
-          var sampleRate = result.sampleRate;
-          if(result.channelData[1]==undefined){
-              const float32arrayLeft = new Float32Array(arbitraryLength);
-              for (var i =0; i<arbitraryLength; i++){
-                  float32arrayLeft[i]=result.channelData[0][i];
+            var bins=2<<7
+            var width=bins/2
+            var height=bins/8
+            var arbitraryLength=width*height
+            var stride = (originalLength-bins)/width
+            var spectrogram=[]
+            for (var i =0; i<width; i++){
+                var tempArray=[]
+                for(var j=0; j<bins; j++){
+                    tempArray[j]=(newArray[Math.floor(i*stride)+j])
+                }
+                const float32arrayLeft = new Float32Array(tempArray);
+                var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
+                spectrogram.push(fft(int32arrayLeft.buffer,sampleRate));
               }
-              var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
-              var arrayLeft = binding.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-              var arrayRight = arrayLeft.slice();
-          }
-          else{
-              const float32arrayLeft = new Float32Array(arbitraryLength);
-              const float32arrayRight = new Float32Array(arbitraryLength);
-              for (var i =0; i<arbitraryLength; i++){
-                  float32arrayLeft[i]=result.channelData[0][i];
-                  float32arrayRight[i]=result.channelData[1][i];
+              return spectrogram
+            }
+          function changeSoundExt(filePath,targetDir,desiredExt,cb){
+            var fileName=path.basename(filePath)
+            var fileNameOnly=fileName.split('.')[0]
+            var newFileName=fileNameOnly+'.'+desiredExt
+  
+            var newOutputFilePath=path.join(targetDir,newFileName)
+            console.log(newOutputFilePath)
+            //var baseCommand=path.join(__dirname,'../binary_build/ffmpeg_convert/dist/convert')
+            //var command=baseCommand+' inputFilePath="'+filePath+'" outputFilePath="'+newOutputFilePath+'" errorDir="'+errorPathDirectory+'"'
+            var baseCommand=path.join(__dirname,'../bin/ffmpeg')
+            var command=baseCommand+' -i '+filePath+' -y -hide_banner '+newOutputFilePath
+            child_process.exec(command,function(err,stdout,stderr){
+              console.log(stdout)
+              if(err!==null){  
+                console.log(err)
               }
-              var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
-              var int32arrayRight = new Int32Array(float32arrayRight.buffer);
-              var arrayLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-              var arrayRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
+              if(typeof(cb)!=='undefined'){
+                cb()
+              }
+            }) 
           }
-          var float32arrayLeft=new Float32Array(arrayLeft)
-          var float32arrayRight=new Float32Array(arrayRight)
-          var combinedChannel=[float32arrayLeft,float32arrayRight]
-          var newWav=wav.encode(combinedChannel,{sampleRate:sampleRate,float:true,})
-          function callbackTwo(){
-            fs.unlink(path.join(tempAudioDir,fileName),function(){
-              fs.unlinkSync(path.join(wavDirectory,fileName))
+          function warmWav(wavPath, newFilePath){
+            const warmer = require('../binary_build/spline/build/Release/addon');
+            var buffer = fs.readFileSync(wavPath);
+            var result = wav.decode(buffer);
+            var arbitraryLength=result.channelData[0].length;
+            var sampleRate = result.sampleRate;
+            if(result.channelData[1]==undefined){
+                const float32arrayLeft = new Float32Array(arbitraryLength);
+                for (var i =0; i<arbitraryLength; i++){
+                    float32arrayLeft[i]=result.channelData[0][i];
+                }
+                var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
+                var arrayLeft = binding.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+                var arrayRight = arrayLeft.slice();
+            }
+            else{
+                const float32arrayLeft = new Float32Array(arbitraryLength);
+                const float32arrayRight = new Float32Array(arbitraryLength);
+                for (var i =0; i<arbitraryLength; i++){
+                    float32arrayLeft[i]=result.channelData[0][i];
+                    float32arrayRight[i]=result.channelData[1][i];
+                }
+                var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
+                var int32arrayRight = new Int32Array(float32arrayRight.buffer);
+                var arrayLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+                var arrayRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
+            }
+            var float32arrayLeft=new Float32Array(arrayLeft)
+            var float32arrayRight=new Float32Array(arrayRight)
+            var combinedChannel=[float32arrayLeft,float32arrayRight]
+            var newWav=wav.encode(combinedChannel,{sampleRate:sampleRate,float:true,})
+            function callbackTwo(){
+              fs.unlink(path.join(tempAudioDir,fileName),function(){
+                fs.unlinkSync(path.join(wavDirectory,fileName))
+              })
+            }
+            fs.writeFile(newFilePath,newWav,function(){
+              //changeSoundExt(newFilePath,fullPathDirectory,'mp3',callbackTwo)
+              changeSoundExt(newFilePath,finalFullPathDirectory,'mp3',callbackTwo)
             })
-          }
-          fs.writeFile(newFilePath,newWav,function(){
-            //changeSoundExt(newFilePath,fullPathDirectory,'mp3',callbackTwo)
-            changeSoundExt(newFilePath,finalFullPathDirectory,'mp3',callbackTwo)
-          })
-        }
-
-        for (var i=0; i<originalLength; i++){
-            if (Math.abs(result.channelData[0][i])>0.0025){
-                frontSilenceTrim=true
-            }
-            if(frontSilenceTrim==true){
-                newArray.push(result.channelData[0][i])
-            }
-        }
-        originalLength=newArray.length
-        for (var i=originalLength-1; i>=0; i-=1){
-            if(endSilenceTrim==false){
-                if (Math.abs(result.channelData[0][i])<0.0025){
-                    newArray.splice(-1,1)
-                }
-                else{
-                    endSilenceTrim=true
-                    originalLength=i+1
-                }
-            }
-        }
-        var bins=2<<7
-        var width=bins/2
-        var height=bins/8
-        var arbitraryLength=width*height
-        var stride = (originalLength-bins)/width
-        var spectrogram=[]
-        for (var i =0; i<width; i++){
-            var tempArray=[]
-            for(var j=0; j<bins; j++){
-                tempArray[j]=(newArray[Math.floor(i*stride)+j])
-            }
-            const float32arrayLeft = new Float32Array(tempArray);
-            var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
-            spectrogram.push(fft(int32arrayLeft.buffer,sampleRate));
           }
           function callbackOne(){
             warmWav(path.join(tempAudioDir,fileName),path.join(wavDirectory,fileName))
