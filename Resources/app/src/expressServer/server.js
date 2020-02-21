@@ -1190,39 +1190,56 @@ app.get('/one-file',cors(),function(req,res){
             var arbitraryLength=result.channelData[0].length;
             var sampleRate = result.sampleRate;
             if(result.channelData[1]==undefined){
-              const float32arrayLeft = new Float32Array(arbitraryLength);
+              // const float32arrayLeft = new Float32Array(arbitraryLength);
+              // for (var i =0; i<arbitraryLength; i++){
+              //     float32arrayLeft[i]=result.channelData[0][i];
+              // }
+              var tempLeft= Array(arbitraryLength);
+
               for (var i =0; i<arbitraryLength; i++){
-                  float32arrayLeft[i]=result.channelData[0][i];
+                tempLeft[i]=result.channelData[0][i];
               }
-              var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
-              // var arrayLeft = binding.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-              // var arrayRight = arrayLeft.slice();
-              var tempLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-              var tempRight = arrayLeft.slice();
+              tempRight = arrayLeft.slice();
               var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
-              var arrayLeft=squwbsResult.left;
-              var arrayRight=squwbsResult.right;
+              const float32arrayLeft= new Float32Array(squwbsResult.left);
+              var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
+              var arrayLeft = binding.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+              var arrayRight = arrayLeft.slice();
+              //var tempLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+              //var tempRight = arrayLeft.slice();
+              // var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
+              // var arrayLeft=squwbsResult.left;
+              // var arrayRight=squwbsResult.right;
             }
             else{
-              const float32arrayLeft = new Float32Array(arbitraryLength);
-              const float32arrayRight = new Float32Array(arbitraryLength);
+              var tempLeft= Array(arbitraryLength);
+              var tempRight=Array(arbitraryLength);
               for (var i =0; i<arbitraryLength; i++){
-                  float32arrayLeft[i]=result.channelData[0][i];
-                  float32arrayRight[i]=result.channelData[1][i];
+                tempLeft[i]=result.channelData[0][i];
+                tempRight[i]=result.channelData[1][i];
               }
+              var squwbsResult =squwbs(tempLeft,tempRight,sampleRate);
+              //const float32arrayLeft = new Float32Array(arbitraryLength);
+              //const float32arrayRight = new Float32Array(arbitraryLength);
+              const float32arrayLeft=new Float32Array(squwbsResult.left);
+              const float32arrayRight=new Float32Array(squwbsResult.right);
+              // for (var i =0; i<arbitraryLength; i++){
+              //     float32arrayLeft[i]=result.channelData[0][i];
+              //     float32arrayRight[i]=result.channelData[1][i];
+              // }
               var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
               var int32arrayRight = new Int32Array(float32arrayRight.buffer);
-              // var arrayLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-              // var arrayRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
-              var tempLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-              var tempRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
-              var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
-              var arrayLeft=squwbsResult.left;
-              var arrayRight=squwbsResult.right;
+              var arrayLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+              var arrayRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
+              // var tempLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+              // var tempRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
+              // var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
+              // var arrayLeft=squwbsResult.left;
+              // var arrayRight=squwbsResult.right;
             }
-            var float32arrayLeft=new Float32Array(arrayLeft)
-            var float32arrayRight=new Float32Array(arrayRight)
-            var combinedChannel=[float32arrayLeft,float32arrayRight]
+            var finalFloat32arrayLeft=new Float32Array(arrayLeft)
+            var finalFloat32arrayRight=new Float32Array(arrayRight)
+            var combinedChannel=[finalFloat32arrayLeft,finalFloat32arrayRight]
             var newWav=wav.encode(combinedChannel,{sampleRate:sampleRate,float:true,})
             function callbackTwo(){
               fs.unlink(path.join(tempAudioDir,fileName),function(){
