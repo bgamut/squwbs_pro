@@ -429,6 +429,7 @@ var child_process=require('child_process')
 //=============
 const binding = require('../binary_build/spline/build/Release/addon');
 const fft = require('../binary_build/fft/build/Release/addon').AcceptArrayBuffer;
+const squwbs = require('../binary_build/squwbs/export.js').squwbs;
 //=============
 // var PNGImage = require('pngjs-image')
 var extensions=[    
@@ -1189,25 +1190,35 @@ app.get('/one-file',cors(),function(req,res){
             var arbitraryLength=result.channelData[0].length;
             var sampleRate = result.sampleRate;
             if(result.channelData[1]==undefined){
-                const float32arrayLeft = new Float32Array(arbitraryLength);
-                for (var i =0; i<arbitraryLength; i++){
-                    float32arrayLeft[i]=result.channelData[0][i];
-                }
-                var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
-                var arrayLeft = binding.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-                var arrayRight = arrayLeft.slice();
+              const float32arrayLeft = new Float32Array(arbitraryLength);
+              for (var i =0; i<arbitraryLength; i++){
+                  float32arrayLeft[i]=result.channelData[0][i];
+              }
+              var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
+              // var arrayLeft = binding.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+              // var arrayRight = arrayLeft.slice();
+              var tempLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+              var tempRight = arrayLeft.slice();
+              var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
+              var arrayLeft=squwbsResult.left;
+              var arrayRight=squwbsResult.right;
             }
             else{
-                const float32arrayLeft = new Float32Array(arbitraryLength);
-                const float32arrayRight = new Float32Array(arbitraryLength);
-                for (var i =0; i<arbitraryLength; i++){
-                    float32arrayLeft[i]=result.channelData[0][i];
-                    float32arrayRight[i]=result.channelData[1][i];
-                }
-                var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
-                var int32arrayRight = new Int32Array(float32arrayRight.buffer);
-                var arrayLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-                var arrayRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
+              const float32arrayLeft = new Float32Array(arbitraryLength);
+              const float32arrayRight = new Float32Array(arbitraryLength);
+              for (var i =0; i<arbitraryLength; i++){
+                  float32arrayLeft[i]=result.channelData[0][i];
+                  float32arrayRight[i]=result.channelData[1][i];
+              }
+              var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
+              var int32arrayRight = new Int32Array(float32arrayRight.buffer);
+              // var arrayLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+              // var arrayRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
+              var tempLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+              var tempRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
+              var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
+              var arrayLeft=squwbsResult.left;
+              var arrayRight=squwbsResult.right;
             }
             var float32arrayLeft=new Float32Array(arrayLeft)
             var float32arrayRight=new Float32Array(arrayRight)
@@ -1243,7 +1254,6 @@ app.get('/one-file',cors(),function(req,res){
         res.send({data:obj})
       }
     }
-  
   soundBetter(filePath)
 })
 //console.log(path.join(__dirname,'../../build'))

@@ -12,6 +12,7 @@ import stringifyObject from 'stringify-object'
 const clearModule = require('clear-module');
 const withQuery = require('with-query').default;
 var child_process=require('child_process')
+//var restart= require('restart')
 
 function App(props) {
 
@@ -329,6 +330,8 @@ const postApi=(endPoint,obj,cb)=>{
   // },[stop]) 
   const pushed=()=>{
     // if(stop==false){
+      
+     // resetPortSettings()
       buttonRef.current.display='hide'
       document.getElementById('business').click()
     // }
@@ -353,6 +356,7 @@ const postApi=(endPoint,obj,cb)=>{
                 ref={buttonRef}
                 onPress={(e)=>{ 
                 // if(stop==false){
+                  //restart({entry:'./expressServer/server.js'})
                   pushed()
                 // }
               }}>
