@@ -438,6 +438,9 @@ var extensions=[
   'mp3',
   'flac'
 ]
+processingList=[]
+doProcess=true
+linearProcessingStarted=false
 function move(oldPath, newPath, callback) {
 //fs.rename(oldPath, newPath, function (err) {
 fs.copyFile(oldPath, newPath, function (err) {
@@ -747,9 +750,14 @@ app.get('/clean-empty',cors(),function(req,res){
   },8000)
   
 })
+app.get('/clean-slate',cors(),function(req,res){
+  processingList=[]
+  res.send({data:'cleaned the slate!'})
+})
 app.get('/one-file',cors(),function(req,res){
 
   var filePath=req.query.file
+  processingList.push(filePath)
   var fraction=req.query.fraction
   var currentGame=req.query.currentGame
   var endGame=req.query.endGame
@@ -789,12 +797,12 @@ app.get('/one-file',cors(),function(req,res){
     return finalFullPathDirectory
   }
   var finalFullPathDirectory=getFinalPathDir(classification)
-  console.log(finalFullPathDirectory)
+  //console.log(finalFullPathDirectory)
   //var tempAudioDir=path.join(fullPathDirectory,'.temp_audio')
   //var wavDirectory=path.join(fullPathDirectory,'.wav')
   //var errorPathDirectory=path.join(fullPathDirectory,'.error_files')
   //var nextFullPathDirectory=path.join(fullPathDirectory,'.mastered_fixed')
-
+  
   if(fs.existsSync(fullPathDirectory)==false){
     fs.mkdir(fullPathDirectory,function(){
       if(fs.existsSync(tempAudioDir)==false){
@@ -1110,6 +1118,7 @@ app.get('/one-file',cors(),function(req,res){
   // writePNG(filePath)
    
   function soundBetter(file){
+    doProcess=false
     var extensions = ['wav','caf','mp3','flac']
     var extIndex=file.split('.').length-1
     var fileName = path.basename(file)
@@ -1118,6 +1127,7 @@ app.get('/one-file',cors(),function(req,res){
     if(extensions.indexOf(file.split('.')[extIndex])!=-1){
           function create_spectrogram(file){
             var buffer = fs.readFileSync(file)
+            // todo: the following needs to be updated to accept wav file type fffe.
             var result = wav.decode(buffer);
             var originalLength=result.channelData[0].length;
             var sampleRate=result.sampleRate
@@ -1172,87 +1182,132 @@ app.get('/one-file',cors(),function(req,res){
             //var baseCommand=path.join(__dirname,'../binary_build/ffmpeg_convert/dist/convert')
             //var command=baseCommand+' inputFilePath="'+filePath+'" outputFilePath="'+newOutputFilePath+'" errorDir="'+errorPathDirectory+'"'
             var baseCommand=path.join(__dirname,'../bin/ffmpeg')
-            var command=baseCommand+' -i '+filePath+' -y -hide_banner '+newOutputFilePath
+            // var command=baseCommand+' -i '+filePath+' -y -hide_banner '+newOutputFilePath
+            var terminalFilePath=filePath.replace(/(\s+)/g, '\\$1');
+            var terminalNewOutputFilePath=newOutputFilePath.replace(/(\s+)/g, '\\$1');
+            if(desiredExt=='wav'){  
+              var command=baseCommand+' -i '+terminalFilePath+' -y -hide_banner -ab 16 '+terminalNewOutputFilePath
+            }
+            else{
+              var command=baseCommand+' -i '+terminalFilePath+' -y -hide_banner '+terminalNewOutputFilePath
+            }
+            
             child_process.exec(command,function(err,stdout,stderr){
               console.log(stdout)
               if(err!==null){  
                 console.log(err)
               }
               if(typeof(cb)!=='undefined'){
-                cb()
+                try{
+                  cb()
+                }
+                catch(err){
+                  console.log(err)
+                  doProcess=true
+                  linearProcessing()
+                }
               }
             }) 
           }
           function warmWav(wavPath, newFilePath){
             const warmer = require('../binary_build/spline/build/Release/addon');
-            var buffer = fs.readFileSync(wavPath);
-            var result = wav.decode(buffer);
-            var arbitraryLength=result.channelData[0].length;
-            var sampleRate = result.sampleRate;
-            if(result.channelData[1]==undefined){
-              // const float32arrayLeft = new Float32Array(arbitraryLength);
-              // for (var i =0; i<arbitraryLength; i++){
-              //     float32arrayLeft[i]=result.channelData[0][i];
-              // }
-              var tempLeft= Array(arbitraryLength);
+            try{
+              wavtPath=wavPath.replace(/(\s+)/g, '\\$1');
+              var buffer = fs.readFileSync(wavPath);
+              var result = wav.decode(buffer);
+              var arbitraryLength=result.channelData[0].length;
+              var sampleRate = result.sampleRate;
+              if(result.channelData[1]==undefined){
+                // const float32arrayLeft = new Float32Array(arbitraryLength);
+                // for (var i =0; i<arbitraryLength; i++){
+                //     float32arrayLeft[i]=result.channelData[0][i];
+                // }
+                var tempLeft= Array(arbitraryLength);
 
-              for (var i =0; i<arbitraryLength; i++){
-                tempLeft[i]=result.channelData[0][i];
+                for (var i =0; i<arbitraryLength; i++){
+                  tempLeft[i]=result.channelData[0][i];
+                }
+                tempRight = arrayLeft.slice();
+                var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
+                const float32arrayLeft= new Float32Array(squwbsResult.left);
+                var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
+                var arrayLeft = binding.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+                var arrayRight = arrayLeft.slice();
+                //var tempLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+                //var tempRight = arrayLeft.slice();
+                // var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
+                // var arrayLeft=squwbsResult.left;
+                // var arrayRight=squwbsResult.right;
               }
-              tempRight = arrayLeft.slice();
-              var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
-              const float32arrayLeft= new Float32Array(squwbsResult.left);
-              var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
-              var arrayLeft = binding.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-              var arrayRight = arrayLeft.slice();
-              //var tempLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-              //var tempRight = arrayLeft.slice();
-              // var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
-              // var arrayLeft=squwbsResult.left;
-              // var arrayRight=squwbsResult.right;
-            }
-            else{
-              var tempLeft= Array(arbitraryLength);
-              var tempRight=Array(arbitraryLength);
-              for (var i =0; i<arbitraryLength; i++){
-                tempLeft[i]=result.channelData[0][i];
-                tempRight[i]=result.channelData[1][i];
+              else{
+                var tempLeft= Array(arbitraryLength);
+                var tempRight=Array(arbitraryLength);
+                for (var i =0; i<arbitraryLength; i++){
+                  tempLeft[i]=result.channelData[0][i];
+                  tempRight[i]=result.channelData[1][i];
+                }
+                var squwbsResult =squwbs(tempLeft,tempRight,sampleRate);
+                //const float32arrayLeft = new Float32Array(arbitraryLength);
+                //const float32arrayRight = new Float32Array(arbitraryLength);
+                const float32arrayLeft=new Float32Array(squwbsResult.left);
+                const float32arrayRight=new Float32Array(squwbsResult.right);
+                // for (var i =0; i<arbitraryLength; i++){
+                //     float32arrayLeft[i]=result.channelData[0][i];
+                //     float32arrayRight[i]=result.channelData[1][i];
+                // }
+                var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
+                var int32arrayRight = new Int32Array(float32arrayRight.buffer);
+                var arrayLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+                var arrayRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
+                // var tempLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+                // var tempRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
+                // var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
+                // var arrayLeft=squwbsResult.left;
+                // var arrayRight=squwbsResult.right;
               }
-              var squwbsResult =squwbs(tempLeft,tempRight,sampleRate);
-              //const float32arrayLeft = new Float32Array(arbitraryLength);
-              //const float32arrayRight = new Float32Array(arbitraryLength);
-              const float32arrayLeft=new Float32Array(squwbsResult.left);
-              const float32arrayRight=new Float32Array(squwbsResult.right);
-              // for (var i =0; i<arbitraryLength; i++){
-              //     float32arrayLeft[i]=result.channelData[0][i];
-              //     float32arrayRight[i]=result.channelData[1][i];
-              // }
-              var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
-              var int32arrayRight = new Int32Array(float32arrayRight.buffer);
-              var arrayLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-              var arrayRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
-              // var tempLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-              // var tempRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
-              // var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
-              // var arrayLeft=squwbsResult.left;
-              // var arrayRight=squwbsResult.right;
-            }
-            var finalFloat32arrayLeft=new Float32Array(arrayLeft)
-            var finalFloat32arrayRight=new Float32Array(arrayRight)
-            var combinedChannel=[finalFloat32arrayLeft,finalFloat32arrayRight]
-            var newWav=wav.encode(combinedChannel,{sampleRate:sampleRate,float:true,})
-            function callbackTwo(){
-              fs.unlink(path.join(tempAudioDir,fileName),function(){
-                fs.unlinkSync(path.join(wavDirectory,fileName))
+              var finalFloat32arrayLeft=new Float32Array(arrayLeft)
+              var finalFloat32arrayRight=new Float32Array(arrayRight)
+              var combinedChannel=[finalFloat32arrayLeft,finalFloat32arrayRight]
+              var newWav=wav.encode(combinedChannel,{sampleRate:sampleRate,float:true,})
+              function callbackTwo(){
+                try{
+                  var newFileName=fileName.split('.').slice()[0]+'.wav'
+                  //fs.unlink(path.join(tempAudioDir,fileName),function(){
+                  fs.unlink(path.join(tempAudioDir,newFileName),function(){
+                    try{
+                      //fs.unlinkSync(path.join(wavDirectory,fileName))
+                      fs.unlinkSync(path.join(wavDirectory,newFileName))
+                      linearProcessing()
+                    }
+                    catch(err){
+                      console.log(err)
+                      doProcess=true
+                      linearProcessing()
+                    }
+                  })
+                }
+                catch(err){
+                  doProcess=true
+                  console.log(err)
+                  linearProcessing()
+                }
+              }
+              fs.writeFile(newFilePath,newWav,function(){
+                //changeSoundExt(newFilePath,fullPathDirectory,'mp3',callbackTwo)
+                changeSoundExt(newFilePath,finalFullPathDirectory,'mp3',callbackTwo)
               })
             }
-            fs.writeFile(newFilePath,newWav,function(){
-              //changeSoundExt(newFilePath,fullPathDirectory,'mp3',callbackTwo)
-              changeSoundExt(newFilePath,finalFullPathDirectory,'mp3',callbackTwo)
-            })
+            catch(err){
+              console.log(err)
+              doProcess=true
+              linearProcessing()
+            }
+            
           }
           function callbackOne(){
-            warmWav(path.join(tempAudioDir,fileName),path.join(wavDirectory,fileName))
+            //warmWav(path.join(tempAudioDir,fileName),path.join(wavDirectory,fileName))
+            var newFileName=fileName.split('.').slice()[0]+'.wav'
+            warmWav(path.join(tempAudioDir,newFileName),path.join(wavDirectory,newFileName))
           }
           changeSoundExt(filePath,tempAudioDir,'wav',function(){
             console.log(fileName)
@@ -1261,17 +1316,42 @@ app.get('/one-file',cors(),function(req,res){
           function check(filePath,i,endIndex,timeout){
             var obj={file:filePath,message:'success',fraction:fraction,currentGame:currentGame,endGame:endGame}
             console.log(currentGame + ' / '+endGame )
+            doProcess=true
             res.send({data:obj})
+            
           }
-          check(finalFullPathDirectory,0,10,800)
+          //check(finalFullPathDirectory,0,10,800)
+          check(finalFullPathDirectory,0,endGame,800)
       }
     else{
       var obj={file:filePath,message:'not wav',fraction:fraction,currentGame:currentGame,endGame:endGame}
         console.log(obj)
+        doProcess=true
         res.send({data:obj})
       }
     }
-  soundBetter(filePath)
+  //soundBetter(filePath)
+  function linearProcessing(){
+    if(processingList.length!=0){
+      //if(doProcess==true){
+        console.log(processingList.length)
+        console.log(processingList[0])
+        processingList.forEach(function(individualPath){
+          soundBetter(processingList[0])
+        })
+        processingList=[]
+      //}
+    }
+    
+    
+    
+    
+  }
+  // if(linearProcessingStarted==false){
+  //   linearProcessing()
+  //   linearProcessingStarted=true
+  // }
+  linearProcessing()
 })
 //console.log(path.join(__dirname,'../../build'))
 console.log('server started in port number : '+String(portnumber))

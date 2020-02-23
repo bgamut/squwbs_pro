@@ -123,11 +123,9 @@ function App(props) {
         if(currentIndex==endIndex-1){
           percentageText.current.innerHTML="Ready"
           var obj={}
-          restApi("clean-empty",obj).then(
-            (json)=>{
-              
-            }
-          )
+          clearSlate("clean-slate",{}).then(function(){
+            console.log('slate clean message sent')
+          })
           //setStop(false)
         }
       }
@@ -194,7 +192,7 @@ const postApi=(endPoint,obj,cb)=>{
       }
   } 
 }
-  const restApi=async(endPoint,queries,cb)=>{
+  const oneFileEndPoint=async(endPoint,queries,cb)=>{
     // var json = require('../assets/sharedInfo.json')
     if(portnumber!=null){
         fetch(withQuery('http://127.0.0.1:'+portnumber+'/'+endPoint, {
@@ -218,6 +216,31 @@ const postApi=(endPoint,obj,cb)=>{
         }
     }
   }  
+  const clearSlate=async(endPoint,queries,cb)=>{
+    // var json = require('../assets/sharedInfo.json')
+    if(portnumber!=null){
+        fetch(withQuery('http://127.0.0.1:'+portnumber+'/'+endPoint, {
+            ...queries,
+            mode:'cors',
+        }))
+        .then(result=>{
+            return result.json()
+        })
+        .then((json)=>{
+            console.log('clean slate fired '+json.data)
+            //setUpdates(json)
+        })
+        .catch((err)=>{
+            console.error(err)
+        })
+  
+    }
+    else{
+        if(cb!=undefined){
+            setTimeout(cb())
+        }
+    }
+  } 
   const handshake=()=>{
       var portnum = require('./sharedInfo.json').portnumber
       var queries={number:Math.random()}
@@ -270,18 +293,19 @@ const postApi=(endPoint,obj,cb)=>{
             }
             var fileIndex=0
             obj.files=filePaths
-            //  restApi('file-path-list',obj)
+            //  oneFileEndPoint('file-path-list',obj)
             var i = 0
             function callback(){
   
             }
             //postApi("all-files",{data:filePaths})
             async function start(){
+                await clearSlate("clean-slate",{})
                 var endGame=filePaths.length
                 for(var i =0; i<endGame; i++){
                     var obj={file:filePaths[i],fraction:i/filePaths.length,currentGame:i,endGame:endGame}
                     //console.log(obj)
-                    var json= await restApi("one-file",obj)
+                    var json= await oneFileEndPoint("one-file",obj)
                     //console.log(json)
                 }
             }
