@@ -1201,8 +1201,8 @@ app.get('/one-file',cors(),function(req,res){
             // var command=baseCommand+' -i '+filePath+' -y -hide_banner '+newOutputFilePath
             // var terminalFilePath=filePath.replace(/(\s+)/g, '\\$1');
             // var terminalNewOutputFilePath=newOutputFilePath.replace(/(\s+)/g, '\\$1');
-            var terminalFilePath=filePath.replace(/[!?$%$#&*]/g,m=>'\\'+m)
-            var terminalNewOutputFilePath=newOutputFilePath.replace(/[!?$%$#&*]/g,m=>'\\'+m)
+            var terminalFilePath=filePath.replace(/[!?$%$#&(\')\`*(\s+)]/g,m=>'\\'+m)
+            var terminalNewOutputFilePath=newOutputFilePath.replace(/[!?$%$#&(\')\`*(\s+)]/g,m=>'\\'+m)
             var terminalNewOutputFilePath=terminalNewOutputFilePath.replace(/(&)/g, '\\$1');
             if(desiredExt=='wav'){  
               var command=baseCommand+' -i '+terminalFilePath+' -y -hide_banner -ab 16 '+terminalNewOutputFilePath
@@ -1235,7 +1235,7 @@ app.get('/one-file',cors(),function(req,res){
             const warmer = require('../binary_build/spline/build/Release/addon');
             try{
               //wavtPath=wavPath.replace(/(\s+)/g, '\\$1');
-              wavtPath=wavPath.replace(/[!?$%$#&*]/g,m=>'\\'+m)
+              wavtPath=wavPath.replace(/[!?$%$#&(\')\`*(\s+)]/g,m=>'\\'+m)
               var buffer = fs.readFileSync(wavPath);
               var result = wav.decode(buffer);
               var arbitraryLength=result.channelData[0].length;
