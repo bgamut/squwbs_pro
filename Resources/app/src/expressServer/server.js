@@ -741,9 +741,9 @@ app.get('/clean-empty',cors(),function(req,res){
     var fullPathDirectory=path.join(desktopPath,'mastered_files')
     var tempAudioDir=path.join(fullPathDirectory,'temp_audio')
     var errorPathDirectory=path.join(fullPathDirectory,'errored_files')
-    var filesToMovefromTemp=fs.readFileSync(tempAudioDir)
+    var filesToMovefromTemp=fs.readdirSync(tempAudioDir)
     var wavDirectory=path.join(fullPathDirectory,'wav')
-    var filesToMovefromWav=fs.readFileSync(wavDirectory)
+    var filesToMovefromWav=fs.readdirSync(wavDirectory)
     function filemovecb(){
       console.log(file+' moved')
     }
