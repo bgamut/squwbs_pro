@@ -744,13 +744,17 @@ app.get('/clean-empty',cors(),function(req,res){
     var filesToMovefromTemp=fs.readdirSync(tempAudioDir)
     var wavDirectory=path.join(fullPathDirectory,'wav')
     var filesToMovefromWav=fs.readdirSync(wavDirectory)
-    function filemovecb(){
-      console.log(file+' moved')
-    }
+    
     filesToMovefromTemp.forEach((file,index)=>{ 
+      function filemovecb(){
+        console.log(file+' moved')
+      }
       move(path.join(tempAudioDir,file),path.join(errorPathDirectory,file),filemovecb)
     })
     filesToMovefromWav.forEach((file,index)=>{
+      function filemovecb(){
+        console.log(file+' moved')
+      }
       move(path.join(tempAudioDir,file),path.join(errorPathDirectory,file),filemovecb)
     })
     allSubDirectories.forEach((dir,index)=>{
