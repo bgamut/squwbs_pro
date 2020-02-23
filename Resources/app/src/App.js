@@ -123,6 +123,7 @@ function App(props) {
         if(currentIndex==endIndex-1){
           percentageText.current.innerHTML="Ready"
           var obj={}
+          cleanEmptyDirectories()
           clearSlate("clean-slate",{}).then(function(){
             console.log('slate clean message sent')
           })
@@ -192,6 +193,24 @@ const postApi=(endPoint,obj,cb)=>{
       }
   } 
 }
+  const cleanEmptyDirectories=async()=>{
+    // var json = require('../assets/sharedInfo.json')
+    if(portnumber!=null){
+        fetch(withQuery('http://127.0.0.1:'+portnumber+'/clean-empty', {
+            mode:'cors',
+        }))
+        .then(result=>{
+            return result.json()
+        })
+        .then((json)=>{
+            console.log('clean empty directories function executed')
+        })
+        .catch((err)=>{
+            console.error(err)
+        })
+  
+    }
+  } 
   const oneFileEndPoint=async(endPoint,queries,cb)=>{
     // var json = require('../assets/sharedInfo.json')
     if(portnumber!=null){

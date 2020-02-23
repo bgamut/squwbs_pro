@@ -737,6 +737,22 @@ app.get('/clean-empty',cors(),function(req,res){
   var fullPathDirectory=path.join(desktopPath,'mastered_files')
   var allSubDirectories=getDirsRecursively(fullPathDirectory)
   function cleanIt(){
+    const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
+    var fullPathDirectory=path.join(desktopPath,'mastered_files')
+    var tempAudioDir=path.join(fullPathDirectory,'temp_audio')
+    var errorPathDirectory=path.join(fullPathDirectory,'errored_files')
+    var filesToMovefromTemp=fs.readFileSync(tempAudioDir)
+    var wavDirectory=path.join(fullPathDirectory,'wav')
+    var filesToMovefromWav=fs.readFileSync(wavDirectory)
+    function filemovecb(){
+      console.log(file+' moved')
+    }
+    filesToMovefromTemp.forEach((file,index)=>{ 
+      move(path.join(tempAudioDir,file),path.join(errorPathDirectory,file),filemovecb)
+    })
+    filesToMovefromWav.forEach((file,index)=>{
+      move(path.join(tempAudioDir,file),path.join(errorPathDirectory,file),filemovecb)
+    })
     allSubDirectories.forEach((dir,index)=>{
       fs.readdir(dir,(err,files)=>{
         if(files.length==0){
@@ -746,6 +762,7 @@ app.get('/clean-empty',cors(),function(req,res){
     })
   }
   setTimeout(function(){
+    console.log('cleanIt function executed.')
     cleanIt()
   },8000)
   
@@ -766,7 +783,7 @@ app.get('/one-file',cors(),function(req,res){
   var fullPathDirectory=path.join(desktopPath,'mastered_files')
   var tempAudioDir=path.join(fullPathDirectory,'temp_audio')
   var wavDirectory=path.join(fullPathDirectory,'wav')
-  var errorPathDirectory=path.join(fullPathDirectory,'error_files')
+  var errorPathDirectory=path.join(fullPathDirectory,'errored_files')
   var nextFullPathDirectory=path.join(fullPathDirectory,'mastered_fixed')
   var miscDirectory=path.join(fullPathDirectory,'Misc')
   var drumsDirectory=path.join(fullPathDirectory,'Drum')
@@ -1182,8 +1199,11 @@ app.get('/one-file',cors(),function(req,res){
             //var command=baseCommand+' inputFilePath="'+filePath+'" outputFilePath="'+newOutputFilePath+'" errorDir="'+errorPathDirectory+'"'
             var baseCommand=path.join(__dirname,'../bin/ffmpeg')
             // var command=baseCommand+' -i '+filePath+' -y -hide_banner '+newOutputFilePath
-            var terminalFilePath=filePath.replace(/(\s+)/g, '\\$1');
-            var terminalNewOutputFilePath=newOutputFilePath.replace(/(\s+)/g, '\\$1');
+            // var terminalFilePath=filePath.replace(/(\s+)/g, '\\$1');
+            // var terminalNewOutputFilePath=newOutputFilePath.replace(/(\s+)/g, '\\$1');
+            var terminalFilePath=filePath.replace(/[!?$%$#&*]/g,m=>'\\'+m)
+            var terminalNewOutputFilePath=newOutputFilePath.replace(/[!?$%$#&*]/g,m=>'\\'+m)
+            var terminalNewOutputFilePath=terminalNewOutputFilePath.replace(/(&)/g, '\\$1');
             if(desiredExt=='wav'){  
               var command=baseCommand+' -i '+terminalFilePath+' -y -hide_banner -ab 16 '+terminalNewOutputFilePath
             }
@@ -1194,7 +1214,10 @@ app.get('/one-file',cors(),function(req,res){
             child_process.exec(command,function(err,stdout,stderr){
               console.log(stdout)
               if(err!==null){  
-                console.log(err)
+                function child_process_message(){
+                  console.log(err)
+                }
+                move(filePath,path.join(errorPathDirectory,fileName),child_process_message)
               }
               if(typeof(cb)!=='undefined'){
                 try{
@@ -1211,7 +1234,8 @@ app.get('/one-file',cors(),function(req,res){
           function warmWav(wavPath, newFilePath){
             const warmer = require('../binary_build/spline/build/Release/addon');
             try{
-              wavtPath=wavPath.replace(/(\s+)/g, '\\$1');
+              //wavtPath=wavPath.replace(/(\s+)/g, '\\$1');
+              wavtPath=wavPath.replace(/[!?$%$#&*]/g,m=>'\\'+m)
               var buffer = fs.readFileSync(wavPath);
               var result = wav.decode(buffer);
               var arbitraryLength=result.channelData[0].length;
@@ -1297,6 +1321,21 @@ app.get('/one-file',cors(),function(req,res){
               })
             }
             catch(err){
+              var originalPath=wavPath
+              var erroredFileName=path.basename(wavPath)
+              var errorPath=path.join(errorPathDirectory,erroredFileName)
+              var errorCallback= function(){
+                console.log('file error : moving to '+errorPath)
+              }
+              
+              move(originalPath, errorPath, errorCallback)
+              try{
+                fs.unlinkSync(path.join(wavDirectory,erroredFileName))
+                fs.unlinkSync(path.join(tempAudioDir,erroredFileName))
+              }
+              catch(err){
+                
+              }
               console.log(err)
               doProcess=true
               linearProcessing()
