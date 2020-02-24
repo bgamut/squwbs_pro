@@ -227,9 +227,10 @@ const postApi=(endPoint,obj,cb)=>{
             setUpdates(json)
         })
         .catch((err)=>{
-          if(currentIndex==stopIndex-2){
+          if(currentIndex==stopIndex-1){
             setCurrentIndex(currentIndex+1)
           }
+            console.log(currentIndex+'/'+stopIndex)
             console.error(err)
         })
   

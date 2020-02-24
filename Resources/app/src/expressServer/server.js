@@ -750,74 +750,98 @@ app.get('/clean-empty',cors(),function(req,res){
         console.log(file+' moved')
       }
       //move(path.join(tempAudioDir,file),path.join(errorPathDirectory,file),filemovecb)
-      var newFileName=file.split('.').slice()[0]+'.wav'
+      //var newFileName=file.split('.').slice()[0]+'.wav'
+      var newFileName=file
       var tempAudioDir=path.join(fullPathDirectory,'temp_audio')
       var errorPathDirectory=path.join(fullPathDirectory,'errored_files')
       var filesToMovefromTemp=fs.readdirSync(tempAudioDir)
       var wavDirectory=path.join(fullPathDirectory,'wav')
-      function warmWav(wavPath, newFilePath){
+      function backupWarmWav(wavPath, newFilePath){
         const warmer = require('../binary_build/spline/build/Release/addon');
         try{
           wavtPath=wavPath.replace(/[!?$%$#&(\')\`*(\s+)]/g,m=>'\\'+m)
           var buffer = fs.readFileSync(wavPath);
-          var result = wav.decode(buffer);
-          var arbitraryLength=result.channelData[0].length;
-          var sampleRate = result.sampleRate;
-          if(result.channelData[1]==undefined){
-            var tempLeft= Array(arbitraryLength);
-
-            for (var i =0; i<arbitraryLength; i++){
-              tempLeft[i]=result.channelData[0][i];
-            }
-            tempRight = arrayLeft.slice();
-            var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
-            const float32arrayLeft= new Float32Array(squwbsResult.left);
-            var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
-            var arrayLeft = binding.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-            var arrayRight = arrayLeft.slice();
-          }
-          else{
-            var tempLeft= Array(arbitraryLength);
-            var tempRight=Array(arbitraryLength);
-            for (var i =0; i<arbitraryLength; i++){
-              tempLeft[i]=result.channelData[0][i];
-              tempRight[i]=result.channelData[1][i];
-            }
-            var squwbsResult =squwbs(tempLeft,tempRight,sampleRate);
-            const float32arrayLeft=new Float32Array(squwbsResult.left);
-            const float32arrayRight=new Float32Array(squwbsResult.right);
-            var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
-            var int32arrayRight = new Int32Array(float32arrayRight.buffer);
-            var arrayLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
-            var arrayRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
-          }
+          const wavefile = require('wavefile')
+          var wavData = new wavefile.WaveFile(buffer)
+          wavData.toSampleRate(44100)
+          var samples = wavData.getSamples(false,Int32Array)
+          var squwbsResult =squwbs(samples[0].buffer,samples[1].buffer,44100);
+          const float32arrayLeft=new Float32Array(squwbsResult.left);
+          const float32arrayRight=new Float32Array(squwbsResult.right);
+          var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
+          var int32arrayRight = new Int32Array(float32arrayRight.buffer);
+          var arrayLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,44100);
+          var arrayRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,44100);
           var finalFloat32arrayLeft=new Float32Array(arrayLeft)
           var finalFloat32arrayRight=new Float32Array(arrayRight)
           var combinedChannel=[finalFloat32arrayLeft,finalFloat32arrayRight]
-          var newWav=wav.encode(combinedChannel,{sampleRate:sampleRate,float:true,})
+          var newWav=wav.encode(combinedChannel,{sampleRate:44100,float:true,})
           function callbackTwo(){
             try{
               var newFileName=fileName.split('.').slice()[0]+'.wav'
               fs.unlink(path.join(tempAudioDir,newFileName),function(){
                 try{
                   fs.unlinkSync(path.join(wavDirectory,newFileName))
-                  linearProcessing()
+                  // linearProcessing()
                 }
                 catch(err){
                   console.log(err)
                   doProcess=true
-                  linearProcessing()
+                  // linearProcessing()
                 }
               })
             }
             catch(err){
               doProcess=true
               console.log(err)
-              linearProcessing()
+              // linearProcessing()
             }
           }
           fs.writeFile(newFilePath,newWav,function(){
             //changeSoundExt(newFilePath,fullPathDirectory,'mp3',callbackTwo)
+            function changeSoundExt(filePath,targetDir,desiredExt,cb){
+              var fileName=path.basename(filePath)
+              var fileNameOnly=fileName.split('.')[0]
+              var newFileName=fileNameOnly+'.'+desiredExt
+    
+              var newOutputFilePath=path.join(targetDir,newFileName)
+              console.log(newOutputFilePath)
+              //var baseCommand=path.join(__dirname,'../binary_build/ffmpeg_convert/dist/convert')
+              //var command=baseCommand+' inputFilePath="'+filePath+'" outputFilePath="'+newOutputFilePath+'" errorDir="'+errorPathDirectory+'"'
+              var baseCommand=path.join(__dirname,'../bin/ffmpeg')
+              // var command=baseCommand+' -i '+filePath+' -y -hide_banner '+newOutputFilePath
+              // var terminalFilePath=filePath.replace(/(\s+)/g, '\\$1');
+              // var terminalNewOutputFilePath=newOutputFilePath.replace(/(\s+)/g, '\\$1');
+              var terminalFilePath=filePath.replace(/[!?$%$#&(\')\`*(\s+)]/g,m=>'\\'+m)
+              var terminalNewOutputFilePath=newOutputFilePath.replace(/[!?$%$#&(\')\`*(\s+)]/g,m=>'\\'+m)
+              var terminalNewOutputFilePath=terminalNewOutputFilePath.replace(/(&)/g, '\\$1');
+              if(desiredExt=='wav'){  
+                var command=baseCommand+' -i '+terminalFilePath+' -y -hide_banner -ab 16 '+terminalNewOutputFilePath
+              }
+              else{
+                var command=baseCommand+' -i '+terminalFilePath+' -y -hide_banner '+terminalNewOutputFilePath
+              }
+              
+              child_process.exec(command,function(err,stdout,stderr){
+                console.log(stdout)
+                if(err!==null){  
+                  function child_process_message(){
+                    console.log(err)
+                  }
+                  move(filePath,path.join(errorPathDirectory,fileName),child_process_message)
+                }
+                if(typeof(cb)!=='undefined'){
+                  try{
+                    cb()
+                  }
+                  catch(err){
+                    console.log(err)
+                    doProcess=true
+                    //linearProcessing()
+                  }
+                }
+              }) 
+            }
             changeSoundExt(newFilePath,finalFullPathDirectory,'mp3',callbackTwo)
           })
         }
@@ -835,7 +859,7 @@ app.get('/clean-empty',cors(),function(req,res){
         }
         
       }
-      warmWav(path.join(tempAudioDir,newFileName),path.join(wavDirectory,newFileName))
+      backupWarmWav(path.join(tempAudioDir,newFileName),path.join(wavDirectory,newFileName))
     })
     filesToMovefromWav.forEach((file,index)=>{
       function filemovecb(){
