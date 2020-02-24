@@ -842,6 +842,42 @@ app.get('/clean-empty',cors(),function(req,res){
                 }
               }) 
             }
+            const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
+            var fullPathDirectory=path.join(desktopPath,'mastered_files')
+            var tempAudioDir=path.join(fullPathDirectory,'temp_audio')
+            var wavDirectory=path.join(fullPathDirectory,'warmWav')
+            var errorPathDirectory=path.join(fullPathDirectory,'errored_files')
+            var nextFullPathDirectory=path.join(fullPathDirectory,'mastered_fixed')
+            var miscDirectory=path.join(fullPathDirectory,'Misc')
+            var drumsDirectory=path.join(fullPathDirectory,'Drum')
+            var loopsDirectory=path.join(fullPathDirectory,'Loops')
+            var inDrumsDir=['Clap','Cymbal','Open Hat','Closed Hat','Kick','Percussion','Shaker','Snare','Tom']
+            var inOtherDir=['Loops','Chords','One Shots','Vocals']
+            var inOtherDirSingular=['Loop','Chord','One Shot','Vocal']
+            var oneshotsDirectory=path.join(fullPathDirectory,'One Shots')
+            var chordsDirectory=path.join(fullPathDirectory,'Chords')
+            var vocalsDirectory=path.join(fullPathDirectory,'Vocals')
+            var classification=predict(file).classification
+            function getFinalPathDir(classification){
+              const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
+              var fullPathDirectory=path.join(desktopPath,'mastered_files')
+              var finalFullPathDirectory= path.join(fullPathDirectory,'Misc')
+              inDrumsDir.forEach((subDirName)=>{
+                if(classification==subDirName.toLowerCase()){
+                  finalFullPathDirectory=path.join(drumsDirectory,subDirName)
+                }
+              })
+              inOtherDirSingular.forEach((classCheck,index)=>{
+                if(classification==classCheck.toLowerCase()){
+                  finalFullPathDirectory=path.join(fullPathDirectory,inOtherDir[index])
+                }
+              })
+              
+
+              return finalFullPathDirectory
+            }
+            var classification=predict(newFilePath).classification
+            var finalFullPathDirectory=getFinalPathDir(classification)
             changeSoundExt(newFilePath,finalFullPathDirectory,'mp3',callbackTwo)
           })
         }
