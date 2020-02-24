@@ -127,6 +127,8 @@ function App(props) {
           clearSlate("clean-slate",{}).then(function(){
             console.log('slate clean message sent')
           })
+          // const app = require('electron').remote.app
+          // app.exit(0)
           //setStop(false)
         }
       }

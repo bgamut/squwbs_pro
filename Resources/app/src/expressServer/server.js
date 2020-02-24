@@ -845,7 +845,7 @@ app.get('/clean-empty',cors(),function(req,res){
             const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
             var fullPathDirectory=path.join(desktopPath,'mastered_files')
             var tempAudioDir=path.join(fullPathDirectory,'temp_audio')
-            var wavDirectory=path.join(fullPathDirectory,'warmWav')
+            var wavDirectory=path.join(fullPathDirectory,'wav')
             var errorPathDirectory=path.join(fullPathDirectory,'errored_files')
             var nextFullPathDirectory=path.join(fullPathDirectory,'mastered_fixed')
             var miscDirectory=path.join(fullPathDirectory,'Misc')
@@ -895,16 +895,21 @@ app.get('/clean-empty',cors(),function(req,res){
         }
         
       }
-      backupWarmWav(path.join(tempAudioDir,newFileName),path.join(wavDirectory,newFileName))
+      
+      //backupWarmWav(path.join(tempAudioDir,newFileName),path.join(wavDirectory,newFileName))
+      function filemovecb(){
+        console.log(file+' moved to errorPathDirectory')
+        fs.unlinkSync(path.join(tempAudioDir,file))
+      }
+      move(path.join(tempAudioDir,newFileName),path.join(errorPathDirectory,newFileName),filemovecb)
+      
     })
     filesToMovefromWav.forEach((file,index)=>{
-      function filemovecb(){
-        console.log(file+' moved')
-      }
+      
       const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
       var fullPathDirectory=path.join(desktopPath,'mastered_files')
       var tempAudioDir=path.join(fullPathDirectory,'temp_audio')
-      var wavDirectory=path.join(fullPathDirectory,'warmWav')
+      var wavDirectory=path.join(fullPathDirectory,'wav')
       var errorPathDirectory=path.join(fullPathDirectory,'errored_files')
       var nextFullPathDirectory=path.join(fullPathDirectory,'mastered_fixed')
       var miscDirectory=path.join(fullPathDirectory,'Misc')
@@ -937,7 +942,11 @@ app.get('/clean-empty',cors(),function(req,res){
       }
       var classification=predict(file).classification
       var finalFullPathDirectory=getFinalPathDir(classification)
-      move(path.join(tempAudioDir,file),path.join(finalFullPathDirectory,file),filemovecb)
+      function filemovecb(){
+        console.log(file+' moved to '+classification)
+        fs.unlinkSync(path.join(wavDirectory,file))
+      }
+      move(path.join(wavDirectory,file),path.join(finalFullPathDirectory,file),filemovecb)
       
     })
     //var filesToMovefromError=fs.readdirSync(errorPathDirectory)
