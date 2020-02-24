@@ -665,8 +665,8 @@ float* match(float left, float right) {
     rightm = matchBox(rightm, prmrms, sidemidrms, sidemidsd, prmsd);
     rightl = matchBox(rightl, prlrms, sidelowrms, sidelowsd, prlsd);
     resetMatch(); 
-	output[0] = sin(M_PI/2.0*clearerOne.process((highMidGain*(midh) + midMidGain * (midm) + lowMidGain * (midl))*midGain + (highSideGain * (lefth) + midSideGain * (leftm) + lowSideGain * (leftl))*sideGain));
-	output[1] = sin(M_PI/2.0*clearerTwo.process((highMidGain*(midh) + midMidGain * (midm) + lowMidGain * (midl))*midGain + (highSideGain * (righth) + midSideGain * (rightm) + lowSideGain * (rightl))*sideGain));
+	output[0] = sin(M_PI/2.0*(highMidGain*(midh) + midMidGain * (midm) + lowMidGain * (midl))*midGain + (highSideGain * (lefth) + midSideGain * (leftm) + lowSideGain * (leftl))*sideGain);
+	output[1] = sin(M_PI/2.0*(highMidGain*(midh) + midMidGain * (midm) + lowMidGain * (midl))*midGain + (highSideGain * (righth) + midSideGain * (rightm) + lowSideGain * (rightl))*sideGain);
 
 	return output;
 };

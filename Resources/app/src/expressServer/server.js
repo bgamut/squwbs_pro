@@ -765,7 +765,7 @@ app.get('/clean-empty',cors(),function(req,res){
           var wavData = new wavefile.WaveFile(buffer)
           wavData.toSampleRate(44100)
           var samples = wavData.getSamples(false,Int32Array)
-          var squwbsResult =squwbs(samples[0].buffer,samples[1].buffer,44100);
+          var squwbsResult =squwbs(samples[0],samples[1],44100);
           const float32arrayLeft=new Float32Array(squwbsResult.left);
           const float32arrayRight=new Float32Array(squwbsResult.right);
           var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
