@@ -749,14 +749,144 @@ app.get('/clean-empty',cors(),function(req,res){
       function filemovecb(){
         console.log(file+' moved')
       }
-      move(path.join(tempAudioDir,file),path.join(errorPathDirectory,file),filemovecb)
+      //move(path.join(tempAudioDir,file),path.join(errorPathDirectory,file),filemovecb)
+      var newFileName=file.split('.').slice()[0]+'.wav'
+      var tempAudioDir=path.join(fullPathDirectory,'temp_audio')
+      var errorPathDirectory=path.join(fullPathDirectory,'errored_files')
+      var filesToMovefromTemp=fs.readdirSync(tempAudioDir)
+      var wavDirectory=path.join(fullPathDirectory,'wav')
+      function warmWav(wavPath, newFilePath){
+        const warmer = require('../binary_build/spline/build/Release/addon');
+        try{
+          wavtPath=wavPath.replace(/[!?$%$#&(\')\`*(\s+)]/g,m=>'\\'+m)
+          var buffer = fs.readFileSync(wavPath);
+          var result = wav.decode(buffer);
+          var arbitraryLength=result.channelData[0].length;
+          var sampleRate = result.sampleRate;
+          if(result.channelData[1]==undefined){
+            var tempLeft= Array(arbitraryLength);
+
+            for (var i =0; i<arbitraryLength; i++){
+              tempLeft[i]=result.channelData[0][i];
+            }
+            tempRight = arrayLeft.slice();
+            var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
+            const float32arrayLeft= new Float32Array(squwbsResult.left);
+            var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
+            var arrayLeft = binding.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+            var arrayRight = arrayLeft.slice();
+          }
+          else{
+            var tempLeft= Array(arbitraryLength);
+            var tempRight=Array(arbitraryLength);
+            for (var i =0; i<arbitraryLength; i++){
+              tempLeft[i]=result.channelData[0][i];
+              tempRight[i]=result.channelData[1][i];
+            }
+            var squwbsResult =squwbs(tempLeft,tempRight,sampleRate);
+            const float32arrayLeft=new Float32Array(squwbsResult.left);
+            const float32arrayRight=new Float32Array(squwbsResult.right);
+            var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
+            var int32arrayRight = new Int32Array(float32arrayRight.buffer);
+            var arrayLeft = warmer.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
+            var arrayRight = warmer.AcceptArrayBuffer(int32arrayRight.buffer,sampleRate);
+          }
+          var finalFloat32arrayLeft=new Float32Array(arrayLeft)
+          var finalFloat32arrayRight=new Float32Array(arrayRight)
+          var combinedChannel=[finalFloat32arrayLeft,finalFloat32arrayRight]
+          var newWav=wav.encode(combinedChannel,{sampleRate:sampleRate,float:true,})
+          function callbackTwo(){
+            try{
+              var newFileName=fileName.split('.').slice()[0]+'.wav'
+              fs.unlink(path.join(tempAudioDir,newFileName),function(){
+                try{
+                  fs.unlinkSync(path.join(wavDirectory,newFileName))
+                  linearProcessing()
+                }
+                catch(err){
+                  console.log(err)
+                  doProcess=true
+                  linearProcessing()
+                }
+              })
+            }
+            catch(err){
+              doProcess=true
+              console.log(err)
+              linearProcessing()
+            }
+          }
+          fs.writeFile(newFilePath,newWav,function(){
+            //changeSoundExt(newFilePath,fullPathDirectory,'mp3',callbackTwo)
+            changeSoundExt(newFilePath,finalFullPathDirectory,'mp3',callbackTwo)
+          })
+        }
+        catch(err){
+          var originalPath=wavPath
+          var erroredFileName=path.basename(wavPath)
+          var errorPath=path.join(errorPathDirectory,erroredFileName)
+          var errorCallback= function(){
+            console.log('file error : moving to '+errorPath)
+          }
+          move(originalPath, errorPath, errorCallback)
+          console.log(err)
+          doProcess=true
+          // linearProcessing()
+        }
+        
+      }
+      warmWav(path.join(tempAudioDir,newFileName),path.join(wavDirectory,newFileName))
     })
     filesToMovefromWav.forEach((file,index)=>{
       function filemovecb(){
         console.log(file+' moved')
       }
-      move(path.join(tempAudioDir,file),path.join(errorPathDirectory,file),filemovecb)
+      const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
+      var fullPathDirectory=path.join(desktopPath,'mastered_files')
+      var tempAudioDir=path.join(fullPathDirectory,'temp_audio')
+      var wavDirectory=path.join(fullPathDirectory,'warmWav')
+      var errorPathDirectory=path.join(fullPathDirectory,'errored_files')
+      var nextFullPathDirectory=path.join(fullPathDirectory,'mastered_fixed')
+      var miscDirectory=path.join(fullPathDirectory,'Misc')
+      var drumsDirectory=path.join(fullPathDirectory,'Drum')
+      var loopsDirectory=path.join(fullPathDirectory,'Loops')
+      var inDrumsDir=['Clap','Cymbal','Open Hat','Closed Hat','Kick','Percussion','Shaker','Snare','Tom']
+      var inOtherDir=['Loops','Chords','One Shots','Vocals']
+      var inOtherDirSingular=['Loop','Chord','One Shot','Vocal']
+      var oneshotsDirectory=path.join(fullPathDirectory,'One Shots')
+      var chordsDirectory=path.join(fullPathDirectory,'Chords')
+      var vocalsDirectory=path.join(fullPathDirectory,'Vocals')
+      var classification=predict(file).classification
+      function getFinalPathDir(classification){
+        const desktopPath = require('path').join(require('os').homedir(), 'Desktop')
+        var fullPathDirectory=path.join(desktopPath,'mastered_files')
+        var finalFullPathDirectory= path.join(fullPathDirectory,'Misc')
+        inDrumsDir.forEach((subDirName)=>{
+          if(classification==subDirName.toLowerCase()){
+            finalFullPathDirectory=path.join(drumsDirectory,subDirName)
+          }
+        })
+        inOtherDirSingular.forEach((classCheck,index)=>{
+          if(classification==classCheck.toLowerCase()){
+            finalFullPathDirectory=path.join(fullPathDirectory,inOtherDir[index])
+          }
+        })
+        
+
+        return finalFullPathDirectory
+      }
+      var classification=predict(file).classification
+      var finalFullPathDirectory=getFinalPathDir(classification)
+      move(path.join(tempAudioDir,file),path.join(finalFullPathDirectory,file),filemovecb)
+      
     })
+    //var filesToMovefromError=fs.readdirSync(errorPathDirectory)
+    // filesToMovefromError.forEach((file,index)=>{
+    //   function filemovecb(){
+    //     console.log(file+' moved')
+    //   }
+    //   move(path.join(tempAudioDir,file),path.join(errorPathDirectory,file),filemovecb)
+    // })
     allSubDirectories.forEach((dir,index)=>{
       fs.readdir(dir,(err,files)=>{
         if(files.length==0){
@@ -1333,13 +1463,13 @@ app.get('/one-file',cors(),function(req,res){
               }
               
               move(originalPath, errorPath, errorCallback)
-              try{
-                fs.unlinkSync(path.join(wavDirectory,erroredFileName))
-                fs.unlinkSync(path.join(tempAudioDir,erroredFileName))
-              }
-              catch(err){
+              // try{
+              //   fs.unlinkSync(path.join(wavDirectory,erroredFileName))
+              //   fs.unlinkSync(path.join(tempAudioDir,erroredFileName))
+              // }
+              // catch(err){
                 
-              }
+              // }
               console.log(err)
               doProcess=true
               linearProcessing()

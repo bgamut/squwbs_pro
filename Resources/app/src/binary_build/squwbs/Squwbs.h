@@ -11,7 +11,50 @@
 #pragma once
 
 #include <math.h>
+class Notch12 
+{
+public:
+    Notch12():
+    cutoff(2750.0),
+    resonance(0.000001),
+    buf0(0.0),
+    buf1(0.0),
+    sampleRate(44100)
+    {
+        calculateFeedbackAmount();
+    }
 
+    ~Notch12()
+    {
+    }
+    float process(float inputValue){
+        buf0 += cutoff * (inputValue - buf0);
+        buf1 += cutoff * (buf0 - buf1);
+        return inputValue - (buf0 - buf1);
+    }
+        
+    void set(float newCutoff) { 
+        cutoff = 2*sin((M_PI)*newCutoff/sampleRate);
+        calculateFeedbackAmount(); 
+    }
+    void setResonance(float newResonance) { 
+        resonance = newResonance; calculateFeedbackAmount(); 
+    }
+    void setSampleRate(float sr){
+        sampleRate=sr;
+    }
+private:
+	float cutoff;
+	float resonance;
+	float buf0;
+	float buf1;
+	float sampleRate;
+	float feedbackAmount;
+	void calculateFeedbackAmount() {
+		feedbackAmount = resonance + resonance / (1.0 - cutoff);
+	};
+    
+};
 class Clipper
 {
 public:
@@ -516,6 +559,8 @@ void setSampleRate(float sr){
     gate1.set(sr);
     gate2.set(sr);
     gate3.set(sr);
+    clearerOne.setSampleRate(sr);
+    clearerTwo.setSampleRate(sr);
 }
 void runStats(float* left, float*right, int length) {
 	for (int i=0; i<length; i++){
@@ -620,8 +665,8 @@ float* match(float left, float right) {
     rightm = matchBox(rightm, prmrms, sidemidrms, sidemidsd, prmsd);
     rightl = matchBox(rightl, prlrms, sidelowrms, sidelowsd, prlsd);
     resetMatch(); 
-	output[0] = sin(M_PI/2.0*(highMidGain*(midh) + midMidGain * (midm) + lowMidGain * (midl))*midGain + (highSideGain * (lefth) + midSideGain * (leftm) + lowSideGain * (leftl))*sideGain);
-	output[1] = sin(M_PI/2.0*(highMidGain*(midh) + midMidGain * (midm) + lowMidGain * (midl))*midGain + (highSideGain * (righth) + midSideGain * (rightm) + lowSideGain * (rightl))*sideGain);
+	output[0] = sin(M_PI/2.0*clearerOne.process((highMidGain*(midh) + midMidGain * (midm) + lowMidGain * (midl))*midGain + (highSideGain * (lefth) + midSideGain * (leftm) + lowSideGain * (leftl))*sideGain));
+	output[1] = sin(M_PI/2.0*clearerTwo.process((highMidGain*(midh) + midMidGain * (midm) + lowMidGain * (midl))*midGain + (highSideGain * (righth) + midSideGain * (rightm) + lowSideGain * (rightl))*sideGain));
 
 	return output;
 };
@@ -789,6 +834,8 @@ private:
 	HP12 leftHPH;
 	HP12 rightHPH;
 	HP12 midHPH;
+    Notch12 clearerOne;
+    Notch12 clearerTwo;
 	Gate gate1;
 	Gate gate2;
     Gate gate3;

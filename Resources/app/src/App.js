@@ -25,6 +25,7 @@ function App(props) {
   const [handshakeStatus,setHandshakeStatus]=useState(false)
   const [updates,setUpdates]=useState(null)
   const [currentIndex,setCurrentIndex]=useState(0)
+  const [stopIndex,setStopIndex]=useState(10000)
   // const [stop,setStop]=useState(false)
   var progressBarStyleOne={
     //flex:1,
@@ -106,6 +107,7 @@ function App(props) {
       // if(currentIndex==0){
       //   setStop(true)
       // }
+      setStopIndex(endIndex)
       if(currentIndex+1<endIndex){
         //currentIndex=currentIndex+1
         setCurrentIndex(currentIndex+1)
@@ -225,6 +227,9 @@ const postApi=(endPoint,obj,cb)=>{
             setUpdates(json)
         })
         .catch((err)=>{
+          if(currentIndex==stopIndex-2){
+            setCurrentIndex(currentIndex+1)
+          }
             console.error(err)
         })
   
