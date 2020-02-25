@@ -1154,8 +1154,10 @@ app.get('/one-file',cors(),function(req,res){
   }
   
   
-  
-  
+  // var nw = require('nw')
+  // nw.findpath(fullPathDirectory)
+  var open = require('mac-open')
+  open(fullPathDirectory, { a: "Finder" }, function(error) {});
   
   
   
@@ -1455,7 +1457,20 @@ app.get('/one-file',cors(),function(req,res){
                 }
                 tempRight = arrayLeft.slice();
                 var squwbsResult = squwbs(tempLeft,tempRight,sampleRate);
-                const float32arrayLeft= new Float32Array(squwbsResult.left);
+                //const float32arrayLeft= new Float32Array(squwbsResult.left);
+                var silenceTrimmedLeft=[]
+                var threshold=0.0013122959062457085
+                var thresholdReached=false
+                for(var i =0; i<squwbsResult.left.length;i++){
+                  if(Math.abs(squwbsResult.left)>threshold){
+                    thresholdReached=true
+                  }
+                  if(thresholdReached==true){
+                    silenceTrimmedLeft.push(squwbsResult.left[i])
+                  }
+                }
+                const float32arrayLeft=new Float32Array(silenceTrimmedLeft)
+
                 var int32arrayLeft = new Int32Array(float32arrayLeft.buffer);
                 var arrayLeft = binding.AcceptArrayBuffer(int32arrayLeft.buffer,sampleRate);
                 var arrayRight = arrayLeft.slice();
@@ -1475,8 +1490,28 @@ app.get('/one-file',cors(),function(req,res){
                 var squwbsResult =squwbs(tempLeft,tempRight,sampleRate);
                 //const float32arrayLeft = new Float32Array(arbitraryLength);
                 //const float32arrayRight = new Float32Array(arbitraryLength);
-                const float32arrayLeft=new Float32Array(squwbsResult.left);
-                const float32arrayRight=new Float32Array(squwbsResult.right);
+                //const float32arrayLeft=new Float32Array(squwbsResult.left);
+                //const float32arrayRight=new Float32Array(squwbsResult.right);
+
+                var silenceTrimmedLeft=[]
+                var silenceTrimmedRight=[]
+                var threshold=0.0013122959062457085
+                var thresholdReached=false
+                for(var i =0; i<squwbsResult.left.length;i++){
+                  if(Math.abs(squwbsResult.left[i])>threshold){
+                    thresholdReached=true
+                  }
+                  if(Math.abs(squwbsResult.right[i])>threshold){
+                    thresholdReached=true
+                  }
+
+                  if(thresholdReached==true){
+                    silenceTrimmedLeft.push(squwbsResult.left[i])
+                    silenceTrimmedRight.push(squwbsResult.right[i])
+                  }
+                }
+                const float32arrayLeft=new Float32Array(silenceTrimmedLeft)
+                const float32arrayRight=new Float32Array(silenceTrimmedRight)
                 // for (var i =0; i<arbitraryLength; i++){
                 //     float32arrayLeft[i]=result.channelData[0][i];
                 //     float32arrayRight[i]=result.channelData[1][i];
